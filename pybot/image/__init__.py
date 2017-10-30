@@ -107,3 +107,16 @@ class Screenshot(object):
             hfile.write(b''.join(ihdr))
             hfile.write(b''.join(idat))
             hfile.write(b''.join(iend))
+
+    def dump(self, filepath):
+        with open(filepath, 'wb') as hfile:
+            hfile.write(struct.pack('>2H', self.width, self.height))
+            hfile.write(bytes(self.bgra))
+
+    @classmethod
+    def parse(cls, filepath):
+        hfile = open(filepath, 'rb')
+        size = struct.unpack('>2H', hfile.read(4))
+        raw = bytearray(hfile.read())
+        hfile.close()
+        return cls(raw, size)
