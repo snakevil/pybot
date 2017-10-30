@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import time
+from .. import player
 
 class Base(object):
     def apply(self, player):
@@ -26,3 +27,14 @@ class Hold(Base):
 
     def apply(self, player):
         time.sleep(self.msecs / 1000)
+
+class Fire(Base):
+    def __init__(self, pos, spread = 0):
+        self.pos = pos
+        self.spread = spread
+
+    def apply(self, player):
+        point = player.Point(self.pos)
+        if self.spread:
+            point = point.spread(self.spread)
+        player.click(point)
