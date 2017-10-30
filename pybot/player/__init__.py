@@ -108,7 +108,8 @@ class Window(object):
     @classmethod
     def first(cls, pattern):
         handles = _decorate.query(pattern)
-        return cls(handles[0]) if 0 < len(handles)
+        if 0 < len(handles):
+            return cls(handles[0])
 
     @classmethod
     def all(cls, pattern):
@@ -123,12 +124,14 @@ class Window(object):
         return _decorate.is_minimized(self._handle)
 
     def minimize(self):
-        return self if self.minimized:
+        if self.minimized:
+            return self
         _decorate.minimize(self._handle)
         return self.idle(10)
 
     def restore(self):
-        return self if not self.minimized:
+        if not self.minimized:
+            return self
         _decorate.restore(self._handle)
         return self.idle(10)
 
@@ -156,7 +159,7 @@ class Window(object):
         _decorate.click(self._handle, point.x, point.y)
         return self.idle(90)
 
-    def screenshot(self):
+    def screen(self):
         return image.Screenshot(_decorate.grab(self._handle), self)
 
 __all__ = ['Point', 'Window']
