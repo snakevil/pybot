@@ -2,6 +2,17 @@
 
 import random
 import math
+import platform
+import time
+from .. import image
+
+system = platform.system()
+if 'Windows' == system:
+    from ._decorate import win32 as _decorate
+elif 'Darwin' == system:
+    from ._decorate import macos as _decorate
+else:
+    from ._decorate import linux as _decorate
 
 class Point(object):
     def __init__(self, x, y = None):
@@ -88,3 +99,64 @@ class Rect(object):
             random.randint(self.left + padding, self.right - padding),
             random.randint(self.top + padding, self.bottom - padding)
         )
+
+class Window(object):
+    def __init__(self, handle):
+        self._handle = handle
+        self.pid = _decorate.get_pid(handle)
+
+    @classmethod
+    def first(cls, pattern):
+        handles = _decorate.query(pattern)
+        return cls(handles[0]) if 0 < len(handles)
+
+    @classmethod
+    def all(cls, pattern):
+        return [cls(handle) for handle in _decorate.query(pattern)]
+
+    def idle(self, msecs):
+        time.sleep(msecs / 1000)
+        return self
+
+    @property
+    def minimized(self):
+        return _decorate.is_minimized(self._handle)
+
+    def minimize(self):
+        return self if self.minimized:
+        _decorate.minimize(self._handle)
+        return self.idle(10)
+
+    def restore(self):
+        return self if not self.minimized:
+        _decorate.restore(self._handle)
+        return self.idle(10)
+
+    def focus(self):
+        self.restore()
+        _decorate.foreground(self._handle)
+        return self
+
+    @property
+    def window(self):
+        self.restore()
+        return Rect(*_decorate.get_rect(self._handle))
+
+    @property
+    def width(self):
+        self.restore()
+        return _decorate.get_size(self._handle)[0]
+
+    @property
+    def height(self):
+        self.restore()
+        return _decorate.get_size(self._handle)[1]
+
+    def click(self, point):
+        _decorate.click(self._handle, point.x, point.y)
+        return self.idle(90)
+
+    def screenshot(self):
+        return image.Screenshot(_decorate.grab(self._handle), self)
+
+__all__ = ['Point', 'Window']
