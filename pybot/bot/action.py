@@ -3,9 +3,10 @@
 import time
 
 class Base(object):
-    def apply(self, player): pass
+    def apply(self, player):
+        pass
 
-class Locate(object):
+class Locate(Base):
     def __init__(self, *refs):
         self.pixels = refs
 
@@ -18,3 +19,10 @@ class Locate(object):
                 found &= pixel == screenshot.pixel(*pixel[0])
             if not found:
                 time.sleep(.1)
+
+class Hold(Base):
+    def __init__(self, msecs):
+        self.msecs = msecs
+
+    def apply(self, player):
+        time.sleep(self.msecs / 1000)
