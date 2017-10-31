@@ -31,6 +31,9 @@ class Color(object):
             except: pass
         return self.r == r and self.g == g and self.b == b
 
+    def __ne__(self, another):
+        return not self.__eq__(another)
+
 class Pixel(Color):
     def __init__(self, pos, rgb):
         self.x = pos[0]
@@ -62,6 +65,9 @@ class Pixel(Color):
             self.r == r and \
             self.g == g and \
             self.b == b
+
+    def __ne__(self, another):
+        return not self.__eq__(another)
 
 class Screenshot(object):
     def __init__(self, raw, size):
