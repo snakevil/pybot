@@ -2,6 +2,7 @@
 
 import struct
 import zlib
+import math
 
 class Color(object):
     def __init__(self, r, g = None, b = None):
@@ -33,6 +34,23 @@ class Color(object):
 
     def __ne__(self, another):
         return not self.__eq__(another)
+
+    def __sub__(self, another):
+        r = g = b = -1
+        another_type = type(another)
+        if another_type == tuple or another_type == list:
+            r = another[0]
+            g = another[1]
+            b = another[2]
+        else:
+            try:
+                r = another.r
+                g = another.g
+                b = another.b
+            except: pass
+        return math.sqrt(
+            pow(self.r - r, 2) + pow(self.g - g, 2) + pow(self.b - b, 2)
+        )
 
 class Pixel(Color):
     def __init__(self, pos, rgb):
@@ -74,6 +92,21 @@ class Pixel(Color):
 
     def __ne__(self, another):
         return not self.__eq__(another)
+
+    def __sub__(self, another):
+        r = g = b = -1
+        another_type = type(another)
+        try:
+            if another_type == tuple or another_type == list:
+                r = another[1][0]
+                g = another[1][1]
+                b = another[1][2]
+            else:
+                r = another.r
+                g = another.g
+                b = another.b
+        except: pass
+        return super(Pixel, self).__sub__((r, g, b))
 
 class Screenshot(object):
     def __init__(self, raw, size):

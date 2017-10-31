@@ -21,9 +21,15 @@ class Locate(Base):
             found = True
             for expected in self.pixels:
                 pixel = screenshot.pixel(*expected[0])
-                if pixel != expected:
+                if 5 < pixel - expected:
                     found = False
-                    self.log(player, 'failed for %s' % pixel)
+                    self.log(player, '(%d, %d, %d) failed for %s' % (
+                            expected[1][0],
+                            expected[1][1],
+                            expected[1][2],
+                            pixel
+                        )
+                    )
                     break
             if not found:
                 player.idle(100)
