@@ -70,10 +70,10 @@ def _click_gtor():
         pos = ((y & 0xFFFF) << 16) | (x & 0xFFFF)
         pid = get_pid(hwnd)
         user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos)
-        time.sleep(10)
+        time.sleep(.01)
         _wait_idle(pid)
         user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos)
-        time.sleep(10)
+        time.sleep(.01)
         _wait_idle(pid)
     return click
 click = _click_gtor()
