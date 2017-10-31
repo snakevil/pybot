@@ -26,15 +26,15 @@ class Operation(action.Base):
     def plan(self):
         pass
 
-    def apply(self, player, state = {}):
+    def apply(self, player, serial = 0, state = {}):
         if not self._plan:
             self._plan = True
             if 1 > len(self.steps):
                 self.plan()
-        self.log(player, self.title)
+        self.log(player, self.title, serial)
         for step in self.steps:
-            state = step.apply(player, state)
-        self.log(player, 'COMPLETED')
+            state = step.apply(player, serial, state)
+        self.log(player, 'COMPLETED', serial)
         return state
 
 __all__ = ['Operation']
