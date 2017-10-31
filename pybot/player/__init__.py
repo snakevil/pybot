@@ -104,7 +104,7 @@ class Window(object):
     def __init__(self, handle):
         self._handle = handle
         self.pid = _decorate.get_pid(handle)
-        self.title = '#%d' % self.pid
+        self.title = '.%d' % self.pid
 
     @classmethod
     def first(cls, pattern):
