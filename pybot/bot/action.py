@@ -27,7 +27,8 @@ class Locate(Base):
         context = super(Locate, self).apply(player, context)
         found = False
         times = 0
-        dismatched = None
+        dismatched_pixel = None
+        dismatched_times = 0
         while not found:
             screenshot = player.screen()
             found = True
@@ -36,7 +37,9 @@ class Locate(Base):
                 pixel = screenshot.pixel(*expected[0])
                 if 10 < pixel - expected:
                     found = False
-                    if dismatched != pixel:
+                    if dismatched_pixel != pixel:
+                        dismatched_pixel = pixel
+                        dismatched_times = 1
                         self.log(
                             player,
                             '(%d, %d, %d) failed for %s' % (
@@ -46,6 +49,15 @@ class Locate(Base):
                                 pixel
                             )
                         )
+                    else:
+                        dismatched_times += 1
+                        if __debug__ and 10 == dismatched_times:
+                            screen.save(
+                                '%d,%d-%d_%d_%d.png' % (
+                                    pixel.x, pixel.y,
+                                    pixel.r, pixel.g, pixel.b
+                                )
+                            )
                     break
             if not found:
                 player.idle(100)
