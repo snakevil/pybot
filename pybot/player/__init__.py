@@ -23,7 +23,7 @@ class Point(object):
         self.y = y
 
     def __str__(self):
-        return '%d,%d' % (self.x, self.y)
+        return 'Point(%d, %d)' % (self.x, self.y)
 
     def __eq__(self, another):
         x = y = -1
@@ -104,6 +104,7 @@ class Window(object):
     def __init__(self, handle):
         self._handle = handle
         self.pid = _decorate.get_pid(handle)
+        self.title = '#%d' % self.pid
 
     @classmethod
     def first(cls, pattern):
@@ -114,6 +115,10 @@ class Window(object):
     @classmethod
     def all(cls, pattern):
         return [cls(handle) for handle in _decorate.query(pattern)]
+
+    def aka(self, nickname):
+        self.title = '@' + nickname
+        return self
 
     def idle(self, msecs):
         time.sleep(msecs / 1000)

@@ -14,7 +14,7 @@ class Color(object):
         self.b = b
 
     def __str__(self):
-        return '(%d %d %d)' % (self.r, self.g, self.b)
+        return 'Color(%d, %d, %d)' % (self.r, self.g, self.b)
 
     def __eq__(self, another):
         r = g = b = -1
@@ -41,7 +41,13 @@ class Pixel(Color):
         super(Pixel, self).__init__(*rgb)
 
     def __str__(self):
-        return '%d,%d %s' % (self.x, self.y, super(Pixel, self).__str__())
+        return 'Pixel((%d, %d), (%d, %d, %d))' % (
+            self.x,
+            self.y,
+            self.r,
+            self.g,
+            self.b
+        )
 
     def __eq__(self, another):
         x = y = r = g = b = -1

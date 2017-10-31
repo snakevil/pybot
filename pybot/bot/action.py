@@ -1,9 +1,12 @@
 # encoding: utf-8
 
-import time
-from .. import player
+import random
+from .. import player as window
 
 class Base(object):
+    def log(self, player, message):
+        print '%s <%s> %s' % (player.title, type(self).__name__, message)
+
     def apply(self, player, state = {}):
         return state
 
@@ -16,18 +19,26 @@ class Locate(Base):
         while not found:
             screenshot = player.screen()
             found = True
-            for pixel in pixels:
-                found &= pixel == screenshot.pixel(*pixel[0])
+            for expected in self.pixels:
+                pixel = screenshot.pixel(*expected[0])
+                if pixel != expected:
+                    found = False
+                    self.log(player, 'failed for %s' % pixel)
+                    break
             if not found:
-                time.sleep(.1)
+                player.idle(100)
+        self.log(player, 'succeed')
         return state
 
-class Hold(Base):
-    def __init__(self, msecs):
+class Wait(Base):
+    def __init__(self, msecs, extra = 0):
         self.msecs = msecs
+        self.extra = extra
 
     def apply(self, player, state = {}):
-        time.sleep(self.msecs / 1000)
+        msecs = self.msecs + random.randint(0, self.extra)
+        self.log(player, '%d ms' % msecs)
+        player.idle(msecs)
         return state
 
 class Fire(Base):
@@ -36,8 +47,9 @@ class Fire(Base):
         self.spread = spread
 
     def apply(self, player, state = {}):
-        point = player.Point(self.pos)
+        point = window.Point(self.pos)
         if self.spread:
             point = point.spread(self.spread)
+        self.log(player, point)
         player.click(point)
         return state

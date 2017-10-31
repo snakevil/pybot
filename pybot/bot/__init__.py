@@ -12,12 +12,15 @@ class Operation(action.Base):
         self.steps.append(action.Locate(*references))
         return self
 
-    def hold(self, msecs):
-        self.steps.append(action.Hold(msecs))
+    def hold(self, msecs, extra = 0):
+        self.steps.append(action.Wait(msecs, extra))
         return self
 
-    def fire(self, x, y, spread = 0):
-        self.steps.append(action.Fire())
+    def fire(self, pos, spread = 0):
+        if type(pos) == int:
+            pos = (pos, spread)
+            spread = 0
+        self.steps.append(action.Fire(pos, spread))
         return self
 
     def plan(self):
@@ -28,8 +31,10 @@ class Operation(action.Base):
             self._plan = True
             if 1 > len(self.steps):
                 self.plan()
+        self.log(player, self.title)
         for step in self.steps:
             state = step.apply(player, state)
+        self.log(player, 'COMPLETED')
         return state
 
 __all__ = ['Operation']
