@@ -26,14 +26,16 @@ def _query_gtor():
     def query(pattern):
         _stack[0] = pattern
         _stack[1] = []
-        user32.EnumWindows(_proxy(_every), 0)
+        result = user32.EnumWindows(_proxy(_every), 0)
+        assert 0 != result, 'user32.EnumWindows'
         return _stack[1]
     return query
 query = _query_gtor()
 
 def get_pid(hwnd):
     pid = c.c_int()
-    user32.GetWindowThreadProcessId(hwnd, c.byref(pid))
+    result = user32.GetWindowThreadProcessId(hwnd, c.byref(pid))
+    assert 0 < result, 'user32.GetWindowThreadProcessId'
     return pid.value
 
 def is_minimized(hwnd):
@@ -47,32 +49,38 @@ minimize = _show_gtor(6)
 restore = _show_gtor(9)
 
 def foreground(hwnd):
-    user32.SetForegroundWindow(hwnd)
+    result = user32.SetForegroundWindow(hwnd)
+    assert 0 != result, 'user32.SetForegroundWindow'
 
 def get_rect(hwnd):
     rect = w.RECT()
-    user32.GetWindowRect(hwnd, c.byref(rect))
+    result = user32.GetWindowRect(hwnd, c.byref(rect))
+    assert 0 != result, 'user32.GetWindowRect'
     return ((rect.left, rect.top), (rect.right, rect.bottom))
 
 def get_size(hwnd):
     rect = w.RECT()
-    user32.GetClientRect(hwnd, c.byref(rect))
+    result = user32.GetClientRect(hwnd, c.byref(rect))
+    assert 0 != result, 'user32.GetClientRect'
     return (rect.right - rect.left, rect.bottom - rect.top)
 
 def _click_gtor():
     PROCESS_QUERY_INFORMATION = 0x400
     def _wait_idle(pid):
         hproc = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
-        kernel32.CloseHandle(hproc)
+        result = kernel32.CloseHandle(hproc)
+        assert 0 != result, 'kernel32.CloseHandle'
     WM_LBUTTONDOWN = 0x201
     WM_LBUTTONUP = 0x202
     def click(hwnd, x, y):
         pos = ((y & 0xFFFF) << 16) | (x & 0xFFFF)
         pid = get_pid(hwnd)
-        user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos)
+        result = user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos)
+        assert 0 != result, 'user32.PostMessageW'
         time.sleep(.01)
         _wait_idle(pid)
-        user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos)
+        result = user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos)
+        assert 0 != result, 'user32.PostMessageW'
         time.sleep(.01)
         _wait_idle(pid)
     return click
@@ -106,13 +114,14 @@ def _grab_gtor():
         width, height = get_size(hwnd)
         hbmp = gdi32.CreateCompatibleBitmap(hdcw, width, height)
         gdi32.SelectObject(hdcm, hbmp)
-        gdi32.BitBlt(
+        result = gdi32.BitBlt(
             hdcm,
             0, 0, width, height,
             hdcw,
             0, 0,
             SRCCOPY
         )
+        assert 0 != result, 'gdi32.BitBlt'
         info = BITMAPINFO()
         info.bmiHeader.biSize = c.sizeof(BITMAPINFOHEADER)
         info.bmiHeader.biWidth = width
@@ -123,7 +132,8 @@ def _grab_gtor():
         info.bmiHeader.biClrUsed = 0
         info.bmiHeader.biClrImportant = 0
         bgra = c.create_string_buffer(width * height * 4)
-        bits = gdi32.GetDIBits(hdcm, hbmp, 0, height, bgra, c.byref(info), 0)
+        lines = gdi32.GetDIBits(hdcm, hbmp, 0, height, bgra, c.byref(info), 0)
+        assert lines == height, 'gdi32.GetDIBits'
         gdi32.DeleteObject(hbmp)
         gdi32.DeleteObject(hdcm)
         user32.ReleaseDC(hwnd, hdcw)
