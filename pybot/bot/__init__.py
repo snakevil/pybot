@@ -27,6 +27,7 @@ class Operation(action.Base):
         pass
 
     def apply(self, player, context = {}):
+        context = action.Base.apply(player, context)
         if not self._plan:
             self._plan = True
             if 1 > len(self.steps):

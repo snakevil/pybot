@@ -6,8 +6,8 @@ from .. import player as window
 class Base(object):
     def log(self, player, message):
         msg = '%s <%s> %s' % (player.title, type(self).__name__, message)
-        if self._context.serial:
-            msg = '#%s %s' % (self._context.serial, msg)
+        if self._context['serial']:
+            msg = '#%s %s' % (self._context['serial'], msg)
         logger = self._context.get('log')
         if hasattr(logger, '__call__'):
             logger(msg)
@@ -24,7 +24,7 @@ class Locate(Base):
         self.pixels = refs
 
     def apply(self, player, context = {}):
-        context = super(Locate, self).apply(player, context)
+        context = Base.apply(player, context)
         found = False
         times = 0
         dismatched_pixel = None
@@ -52,7 +52,7 @@ class Locate(Base):
                     else:
                         dismatched_times += 1
                         if __debug__ and 10 == dismatched_times:
-                            screen.save(
+                            screenshot.save(
                                 '%d,%d-%d_%d_%d.png' % (
                                     pixel.x, pixel.y,
                                     pixel.r, pixel.g, pixel.b
@@ -70,7 +70,7 @@ class Wait(Base):
         self.extra = extra
 
     def apply(self, player, context = {}):
-        context = super(Wait, self).apply(player, context)
+        context = Base.apply(player, context)
         msecs = self.msecs + random.randint(0, self.extra)
         self.log(player, '%d ms' % msecs)
         player.idle(msecs)
@@ -82,7 +82,7 @@ class Fire(Base):
         self.spread = spread
 
     def apply(self, player, context = {}):
-        context = super(Fire, self).apply(player, context)
+        context = Base.apply(player, context)
         point = window.Point(self.pos)
         if self.spread:
             point = point.spread(self.spread)
