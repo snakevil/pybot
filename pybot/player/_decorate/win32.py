@@ -89,6 +89,7 @@ click = _click_gtor()
 def _grab_gtor():
     SRCCOPY = 0xCC0020
     BI_RGB = 0
+    PW_CLIENTONLY = 1
     class BITMAPINFOHEADER(c.Structure):
         _fields_ = [
             ('biSize', w.DWORD),
@@ -138,7 +139,31 @@ def _grab_gtor():
         gdi32.DeleteObject(hdcm)
         user32.ReleaseDC(hwnd, hdcw)
         return bytearray(bgra)
-    return grab
+    def grab2(hwnd):
+        hdcw = user32.GetDC(hwnd)
+        hdcm = gdi32.CreateCompatibleDC(hdcw)
+        width, height = get_size(hwnd)
+        hbmp = gdi32.CreateCompatibleBitmap(hdcw, width, height)
+        gdi32.SelectObject(hdcm, hbmp)
+        result = user32.PrintWindow(hwnd, hdcm, PW_CLIENTONLY)
+        assert 0 != result, 'user32.PrintWindow'
+        info = BITMAPINFO()
+        info.bmiHeader.biSize = c.sizeof(BITMAPINFOHEADER)
+        info.bmiHeader.biWidth = width
+        info.bmiHeader.biHeight = - height
+        info.bmiHeader.biPlanes = 1
+        info.bmiHeader.biBitCount = 32
+        info.bmiHeader.biCompression = BI_RGB
+        info.bmiHeader.biClrUsed = 0
+        info.bmiHeader.biClrImportant = 0
+        bgra = c.create_string_buffer(width * height * 4)
+        lines = gdi32.GetDIBits(hdcm, hbmp, 0, height, bgra, c.byref(info), 0)
+        assert lines == height, 'gdi32.GetDIBits'
+        gdi32.DeleteObject(hbmp)
+        gdi32.DeleteObject(hdcm)
+        user32.ReleaseDC(hwnd, hdcw)
+        return bytearray(bgra)
+    return (grab, grab2)
 grab = _grab_gtor()
 
 __all__ = [
@@ -146,5 +171,5 @@ __all__ = [
     'get_pid', 'is_minimized', 'minimize', 'restore', 'foreground',
     'get_rect', 'get_size',
     'click',
-    'grab'
+    'grab', 'grab2'
 ]
