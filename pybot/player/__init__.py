@@ -147,24 +147,24 @@ class Window(object):
 
     @property
     def window(self):
-        self.restore()
         return Rect(*_decorate.get_rect(self._handle))
 
     @property
     def width(self):
-        self.restore()
         return _decorate.get_size(self._handle)[0]
 
     @property
     def height(self):
-        self.restore()
         return _decorate.get_size(self._handle)[1]
 
     def click(self, point):
         _decorate.click(self._handle, point.x, point.y)
         return self.idle(90)
 
+    @property
     def screen(self):
+        if not self.width or not self.height:
+            return
         return image.Screenshot(_decorate.grab(self._handle), self)
 
 __all__ = ['Point', 'Window']

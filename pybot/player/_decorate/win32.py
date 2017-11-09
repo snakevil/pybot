@@ -164,7 +164,7 @@ def _grab_gtor():
         user32.ReleaseDC(hwnd, hdcw)
         return bytearray(bgra)
     return (grab, grab2)
-grab = _grab_gtor()
+(grab, grab2) = _grab_gtor()
 
 __all__ = [
     'query',
