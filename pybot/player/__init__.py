@@ -164,6 +164,6 @@ class Window(object):
     def snap(self):
         if not self.width or not self.height:
             return
-        return image.Screenshot(_decorate.grab(self._handle), self)
+        return image.Screenshot(self, _decorate.grab(self._handle))
 
 __all__ = ['Point', 'Window']
