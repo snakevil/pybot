@@ -161,8 +161,7 @@ class Window(object):
         _decorate.click(self._handle, point.x, point.y)
         return self.idle(90)
 
-    @property
-    def screen(self):
+    def snap(self):
         if not self.width or not self.height:
             return
         return image.Screenshot(_decorate.grab(self._handle), self)
