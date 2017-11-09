@@ -90,8 +90,8 @@ class Rect(object):
 
     def center(self):
         return Point(
-            self.left + int(self.width / 2),
-            self.top + int(self.height / 2)
+            self.left + (self.width >> 1),
+            self.top + (self.height >> 1)
         )
 
     def random(self, padding = 0):

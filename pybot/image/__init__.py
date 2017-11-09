@@ -199,6 +199,90 @@ class Image(object):
             raw[line * y:line * (y + 1)] = self.bgrr[offset:offset + line]
         return type(self)((width, height), raw)
 
+    def resize(self, width, height):
+        ''' http://blog.csdn.net/liyuan02/article/details/6765442
+        '''
+        assert 0 < width
+        assert 0 < height
+        line = 4 * width
+        raw = bytearray(line * height)
+        ratio_x = (self.width << 16) / width
+        ratio_y = (self.height << 16) / height
+        line0 = 4 * self.width
+        for y in range(height):
+            y0 = y * ratio_y >> 16
+            offset = y * line
+            offset0 = y0 * line0
+            for x in range(width):
+                x0 = x * ratio_x >> 16
+                raw[offset + 4 * x:offset + 4 * x + 4] = \
+                    self.bgrr[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
+        return type(self)((width, height), raw)
+
+    def grayscale(self):
+        ''' http://blog.csdn.net/u013467442/article/details/47616661
+        '''
+        raw = bytearray(len(self.bgrr))
+        for i in range(0, len(raw), 4):
+            gray = (
+                4 * self.bgrr[2 + i] + 10 * self.bgrr[1 + i] + 2 * self.bgrr[i]
+            ) >> 4
+            raw[i] = raw[1 + i] = raw[2 + i] = gray
+        return type(self)(self, raw)
+
+    @property
+    def otsugray(self):
+        ''' http://www.isnowfy.com/similar-image-search/
+            http://www.ruanyifeng.com/blog/2013/03/similar_image_search_part_ii.html
+        '''
+        size = self.width * self.height
+        grays = list(self.bgrr[0::4])
+        ret = 0
+        ref = 0
+        for guess in range(1 + min(grays), max(grays)):
+            grayf = []
+            grayb = []
+            for gray in grays:
+                if gray < guess:
+                    grayb.append(gray)
+                else:
+                    grayf.append(gray)
+            digest = pow(sum(grayf), 2) * len(grayb) + \
+                pow(sum(grayb), 2) * len(grayf)
+            if digest > ref:
+                ref = digest
+                ret = guess
+        return ret
+
+    def otsu(self, gray = 0):
+        if not gray:
+            gray = self.otsugray
+        ret = ''
+        buff = 0
+        cntr = 0
+        for pixel in self.bgrr[0::4]:
+            buff <<= 1
+            if pixel > gray:
+                buff += 1
+            cntr += 1
+            if not cntr % 4:
+                ret += hex(buff)[2]
+                buff = 0
+        if buff:
+            ret += hex(buff)[2]
+        return ret
+
+    def otsuscale(self, gray = 0):
+        if not gray:
+            gray = self.otsugray
+        raw = []
+        for pixel in self.bgrr[0::4]:
+            if pixel > gray:
+                raw += [255, 255, 255, 0]
+            else:
+                raw += [0, 0, 0, 0]
+        return type(self)(self, bytearray(raw))
+
     @classmethod
     def load(cls, filepath):
         rpos = filepath.rfind('.')
