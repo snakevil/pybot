@@ -16,8 +16,6 @@ class Base(object):
         log = self.context.get('log')
         if hasattr(log, '__call__'):
             log(message)
-        else:
-            print message
 
     def apply(self, player, context = {}):
         assert isinstance(player, window.Window)

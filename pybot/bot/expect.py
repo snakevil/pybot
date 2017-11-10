@@ -1,6 +1,5 @@
 # encoding: utf-8
 
-import sys
 from .. import image
 from .. import player as window
 
@@ -17,8 +16,6 @@ class Base(object):
         log = self.context.get('dbg')
         if hasattr(log, '__call__'):
             log(message)
-        else:
-            print >> sys.stderr, message
 
     def test(self, player, context = {}):
         assert isinstance(player, window.Window)
@@ -78,11 +75,11 @@ class Pixels(Base):
             distance = pixel - expected
             if self.threshold < distance:
                 dismatched += 1
-                self.log('%s in D%.1f' % (pixel, distance))
+                self.log('%s in D%.2f' % (pixel, distance))
         return 1 > dismatched
 
 class Otsu(Base):
-    def __init__(self, region, otsu, threshold = 0, gray = 0):
+    def __init__(self, region, otsu, gray = 0, threshold = 10):
         assert isinstance(otsu, str)
         assert isinstance(threshold, int) and 0 <= threshold
         assert isinstance(gray, int) and 0 <= gray and gray < 255
@@ -94,23 +91,30 @@ class Otsu(Base):
         self.gray = gray
 
     def test(self, player, context = {}):
-        super(Otsu, self).apply(player, context)
+        super(Otsu, self).test(player, context)
         otsu = player.snap().crop(
             (self.region.left, self.region.top),
             (self.region.right, self.region.bottom)
         ).resize(8, 8).grayscale().otsu(self.gray)
-        expected_bin = bin(int(self.otsu, 16))
-        otsu_bin = bin(int(otsu, 16))
-        expected_len = len(expected_bin)
-        otsu_len = len(otsu_bin)
-        distance = abs(expected_len - otsu_len)
-        for i in range(2, min(expected_len, otsu_len)):
-            if expected_bin[i] != otsu_bin[i]:
-                distance += 1
-        if 100 * distance > self.threshold * max(expected_len, otsu_len):
-            self.log('D%d' % distance)
+        distance = self._measure(self.otsu, otsu)
+        if distance > self.threshold:
+            self.log('%s in D%.2f' % (self.region, distance))
             return False
         return True
+
+    def _measure(self, a, b):
+        a_len = len(a)
+        b_len = len(b)
+        distance = 4 * abs(a_len - b_len)
+        for i in range(min(a_len, b_len)):
+            if a[i] != b[i]:
+                a_bin = bin(int(a[i], 16))[2:].zfill(4)
+                b_bin = bin(int(b[i], 16))[2:].zfill(4)
+                for j in range(4):
+                    if a_bin[j] != b_bin[j]:
+                        distance += 1
+        return 25 * distance / max(a_len, b_len)
+
 
 __all__ = [
     'All', 'Any',

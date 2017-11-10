@@ -122,7 +122,8 @@ class Window(object):
         return [cls(handle) for handle in _decorate.query(pattern)]
 
     def aka(self, nickname):
-        self.title = '@' + nickname
+        self.title = '@' + nickname if nickname \
+            else '.%d' % self.pid
         return self
 
     def idle(self, msecs):

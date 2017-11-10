@@ -187,7 +187,7 @@ class Image(object):
         bottom = max(top_left[1], bottom_right[1])
         left = min(top_left[0], bottom_right[0])
         assert 0 <= left and left < self.width
-        assert 0 <= top and left < self.height
+        assert 0 <= top and top < self.height
         width = right - left
         height = bottom - top
         assert 0 < width and width <= self.width
@@ -210,11 +210,11 @@ class Image(object):
         ratio_y = (self.height << 16) / height
         line0 = 4 * self.width
         for y in range(height):
-            y0 = y * ratio_y >> 16
+            y0 = int(y * ratio_y) >> 16
             offset = y * line
             offset0 = y0 * line0
             for x in range(width):
-                x0 = x * ratio_x >> 16
+                x0 = int(x * ratio_x) >> 16
                 raw[offset + 4 * x:offset + 4 * x + 4] = \
                     self.bgrr[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
         return type(self)((width, height), raw)
@@ -257,19 +257,16 @@ class Image(object):
     def otsu(self, gray = 0):
         if not gray:
             gray = self.otsugray
-        ret = ''
-        buff = 0
-        cntr = 0
+        buff = ''
         for pixel in self.bgrr[0::4]:
-            buff <<= 1
-            if pixel > gray:
-                buff += 1
-            cntr += 1
-            if not cntr % 4:
-                ret += hex(buff)[2]
-                buff = 0
-        if buff:
-            ret += hex(buff)[2]
+            buff += '1' if pixel > gray \
+                else '0'
+        pad = 4 - len(buff) % 4
+        if 4 > pad:
+            buff = '0' * pad + buff
+        ret = ''
+        for i in range(0, len(buff), 4):
+            ret += hex(int(buff[i:4 + i], 2))[2]
         return ret
 
     def otsuscale(self, gray = 0):
@@ -302,7 +299,7 @@ class Image(object):
         width, height = struct.unpack('>2I', blob[16:24])
         idat_size, = struct.unpack('>I', blob[33:37])
         blob = zlib.decompress(blob[41:41 + idat_size])
-        rgbs = ''
+        rgbs = b''
         for y in range(height):
             rgbs += blob[1 + (1 + 3 * width) * y:(1 + 3 * width) * (1 + y)]
         rgbs = bytearray(rgbs)
