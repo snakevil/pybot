@@ -66,7 +66,7 @@ class Rect(object):
         self.height = self.bottom - self.top
 
     def __str__(self):
-        return '%d,%d ~ %d,%d' % (self.left, self.top, self.right, self.bottom)
+        return 'Rect((%d, %d), (%d, %d))' % (self.left, self.top, self.right, self.bottom)
 
     def __eq__(self, another):
         top = right = bottom = left = -1
