@@ -95,6 +95,8 @@ class Rect(object):
         )
 
     def random(self, padding = 0):
+        padding = int(padding)
+        assert 0 <= padding and 2 * padding <= min(self.width, self.height)
         return Point(
             random.randint(self.left + padding, self.right - padding),
             random.randint(self.top + padding, self.bottom - padding)
@@ -105,6 +107,9 @@ class Window(object):
         self._handle = handle
         self.pid = _decorate.get_pid(handle)
         self.title = '.%d' % self.pid
+
+    def __str__(self):
+        return self.title
 
     @classmethod
     def first(cls, pattern):
