@@ -64,3 +64,5 @@ class Fire(Base):
         self.log(point)
         player.click(point)
         return self
+
+__all__ = ['Wait', 'Fire']

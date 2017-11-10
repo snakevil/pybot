@@ -93,3 +93,40 @@ class Pixels(Base):
                 dismatched += 1
                 self.log('%s in D%.1f' % (pixel, distance))
         return 1 > dismatched
+
+class Otsu(Base):
+    def __init__(self, region, otsu, threshold = 0, gray = 0):
+        assert isinstance(otsu, str)
+        assert isinstance(threshold, int) and 0 <= threshold
+        assert isinstance(gray, int) and 0 <= gray and gray < 255
+        super(Otsu, self).__init__()
+        self.region = region if isinstance(region, window.Rect) \
+            else window.Rect(*region)
+        self.otsu = otsu
+        self.threshold = threshold
+        self.gray = gray
+
+    def test(self, player, context = {}):
+        super(Otsu, self).apply(player, context)
+        otsu = player.snap().crop(
+            (self.region.left, self.region.top),
+            (self.region.right, self.region.bottom)
+        ).resize(8, 8).grayscale().otsu(self.gray)
+        expected_bin = bin(int(self.otsu, 16))
+        otsu_bin = bin(int(otsu, 16))
+        expected_len = len(expected_bin)
+        otsu_len = len(otsu_bin)
+        distance = abs(expected_len - otsu_len)
+        for i in range(2, min(expected_len, otsu_len)):
+            if expected_bin[i] != otsu_bin[i]:
+                distance += 1
+        if 100 * distance > self.threshold * max(expected_len, otsu_len):
+            self.log('D%d' % distance)
+            return False
+        return True
+
+__all__ = [
+    'All', 'Any',
+    'Until',
+    'Pixels', 'Otsu'
+]
