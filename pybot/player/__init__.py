@@ -170,6 +170,10 @@ class Window(object):
     def snap(self):
         if not self.width or not self.height:
             return
-        return image.Screenshot(self, _decorate.grab(self._handle))
+        now = time.time()
+        if not self._snap_due or self._snap_due < now:
+            self._snap_due = now + 0.033333
+            self._snap = image.Screenshot(self, _decorate.grab(self._handle))
+        return self._snap
 
 __all__ = ['Point', 'Window']
