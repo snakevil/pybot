@@ -46,6 +46,16 @@ class Base1(Base):
     def then(self, action):
         return Thenable().then(self).then(action)
 
+class Noop(Base1):
+    def __init__(self, desc):
+        super(Noop, self).__init__()
+        self.desc = desc
+
+    def apply(self, player, context = {}):
+        super(Noop, self).apply(player, context)
+        self.log(self.desc)
+        return context
+
 class Wait(Base1):
     def __init__(self, nmsecs, xmsecs = 0):
         assert isinstance(nmsecs, int) and 0 < nmsecs
@@ -79,4 +89,7 @@ class Fire(Base1):
         player.click(point)
         return context
 
-__all__ = ['Wait', 'Fire']
+__all__ = [
+    'Noop',
+    'Wait', 'Fire'
+]

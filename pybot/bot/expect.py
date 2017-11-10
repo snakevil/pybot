@@ -51,19 +51,6 @@ class Any(Base):
                 return True
         return False
 
-class Until(Base):
-    def __init__(self, expect):
-        super(Until, self).__init__()
-        assert isinstance(expect, Base)
-        self.expect = expect
-
-    def test(self, player, context = {}):
-        super(Until, self).test(player, context)
-        while not self.expect.test(player, context):
-            player.idle(100)
-            self.log('100 ms')
-        return True
-
 class Pixels(Base):
     def __init__(self, *pixels, **params):
         assert 0 < len(pixels)
