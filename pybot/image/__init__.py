@@ -294,6 +294,22 @@ class Image(object):
                 raw += [0, 0, 0, 0]
         return type(self)(self, bytearray(raw))
 
+    def histogram(self, accuracy = 2):
+        assert isinstance(accuracy, int) and 0 < accuracy and accuracy < 9
+        values = range(1 << accuracy)
+        bit = 8 - accuracy
+        space = [
+            [
+                [0 for i in values] for j in values
+            ] for k in values
+        ]
+        for i in range(0, len(self.bgrr), 4):
+            r = self.bgrr[2 + i] >> bit
+            g = self.bgrr[1 + i] >> bit
+            b = self.bgrr[i] >> bit
+            space[r][g][b] += 1
+        return space
+
     @classmethod
     def load(cls, filepath):
         rpos = filepath.rfind('.')
