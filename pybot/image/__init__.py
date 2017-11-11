@@ -109,7 +109,7 @@ class Pixel(Color):
         except: pass
         return super(Pixel, self).__sub__((r, g, b))
 
-class Image(object):
+class Base(object):
     def __init__(self, size, raw):
         self.bgrr = raw
         size_type = type(size)
@@ -219,16 +219,63 @@ class Image(object):
                     self.bgrr[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
         return type(self)((width, height), raw)
 
-    def grayscale(self):
+    def histogram(self, accuracy = 2):
+        assert isinstance(accuracy, int) and 0 < accuracy and accuracy < 9
+        values = range(1 << accuracy)
+        bit = 8 - accuracy
+        space = [
+            [
+                [0 for i in values] for j in values
+            ] for k in values
+        ]
+        for i in range(0, len(self.bgrr), 4):
+            r = self.bgrr[2 + i] >> bit
+            g = self.bgrr[1 + i] >> bit
+            b = self.bgrr[i] >> bit
+            space[r][g][b] += 1
+        return space
+
+    @classmethod
+    def load(cls, filepath):
+        rpos = filepath.rfind('.')
+        if -1 < rpos:
+            ext = filepath[rpos:]
+        else:
+            ext = '.png'
+            filepath += ext
+        blob = ''
+        with open(filepath, 'rb') as hfile:
+            blob = hfile.read()
+        if '.png' == ext:
+            return cls._png(blob)
+
+    @classmethod
+    def _png(cls, blob):
+        width, height = struct.unpack('>2I', blob[16:24])
+        idat_size, = struct.unpack('>I', blob[33:37])
+        blob = zlib.decompress(blob[41:41 + idat_size])
+        rgbs = b''
+        for y in range(height):
+            rgbs += blob[1 + (1 + 3 * width) * y:(1 + 3 * width) * (1 + y)]
+        rgbs = bytearray(rgbs)
+        raw = bytearray(4 * width * height)
+        raw[0::4], raw[1::4], raw[2::4] = rgbs[2::3], rgbs[1::3], rgbs[0::3]
+        return cls((width, height), raw)
+
+class Grayscaled(Base):
+    def __init__(self, size, raw, bit = 8):
         ''' http://blog.csdn.net/u013467442/article/details/47616661
         '''
-        raw = bytearray(len(self.bgrr))
+        assert isinstance(bit, int) and 0 < bit and bit < 9
+        self.bit = bit
+        bgrr = bytearray(len(raw))
+        bit = 8 - bit
         for i in range(0, len(raw), 4):
             gray = (
-                4 * self.bgrr[2 + i] + 10 * self.bgrr[1 + i] + 2 * self.bgrr[i]
-            ) >> 4
-            raw[i] = raw[1 + i] = raw[2 + i] = gray
-        return type(self)(self, raw)
+                raw[2 + i] + (raw[1 + i] << 1) + raw[i]
+            ) >> 2 + bit << bit
+            bgrr[i] = bgrr[1 + i] = bgrr[2 + i] = gray
+        super(Grayscaled, self).__init__(size, bgrr)
 
     @property
     def otsugray(self):
@@ -294,47 +341,8 @@ class Image(object):
                 raw += [0, 0, 0, 0]
         return type(self)(self, bytearray(raw))
 
-    def histogram(self, accuracy = 2):
-        assert isinstance(accuracy, int) and 0 < accuracy and accuracy < 9
-        values = range(1 << accuracy)
-        bit = 8 - accuracy
-        space = [
-            [
-                [0 for i in values] for j in values
-            ] for k in values
-        ]
-        for i in range(0, len(self.bgrr), 4):
-            r = self.bgrr[2 + i] >> bit
-            g = self.bgrr[1 + i] >> bit
-            b = self.bgrr[i] >> bit
-            space[r][g][b] += 1
-        return space
-
-    @classmethod
-    def load(cls, filepath):
-        rpos = filepath.rfind('.')
-        if -1 < rpos:
-            ext = filepath[rpos:]
-        else:
-            ext = '.png'
-            filepath += ext
-        blob = ''
-        with open(filepath, 'rb') as hfile:
-            blob = hfile.read()
-        if '.png' == ext:
-            return cls._png(blob)
-
-    @classmethod
-    def _png(cls, blob):
-        width, height = struct.unpack('>2I', blob[16:24])
-        idat_size, = struct.unpack('>I', blob[33:37])
-        blob = zlib.decompress(blob[41:41 + idat_size])
-        rgbs = b''
-        for y in range(height):
-            rgbs += blob[1 + (1 + 3 * width) * y:(1 + 3 * width) * (1 + y)]
-        rgbs = bytearray(rgbs)
-        raw = bytearray(4 * width * height)
-        raw[0::4], raw[1::4], raw[2::4] = rgbs[2::3], rgbs[1::3], rgbs[0::3]
-        return cls((width, height), raw)
+class Image(Base):
+    def grayscale(self, bit = 8):
+        return Grayscaled(self, self.bgrr, bit)
 
 class Screenshot(Image): pass
