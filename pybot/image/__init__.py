@@ -234,25 +234,39 @@ class Image(object):
     def otsugray(self):
         ''' http://www.isnowfy.com/similar-image-search/
             http://www.ruanyifeng.com/blog/2013/03/similar_image_search_part_ii.html
+
+            len(grayb) / len(grays) * \
+            len(grayf) / len(grays) * \
+            pow(sum(grayb) / len(grayb) - sum(grayf) / len(grayf), 2)
+
+            len(grayb) * \
+            len(grayf) * \
+            pow(sum(grayb) * len(grayf) - sum(grayf) * len(grayb), 2)
         '''
-        size = self.width * self.height
-        grays = list(self.bgrr[0::4])
-        ret = 0
-        ref = 0
-        for guess in range(1 + min(grays), max(grays)):
-            grayf = []
-            grayb = []
-            for gray in grays:
-                if gray < guess:
-                    grayb.append(gray)
-                else:
-                    grayf.append(gray)
-            digest = pow(sum(grayf), 2) * len(grayb) + \
-                pow(sum(grayb), 2) * len(grayf)
-            if digest > ref:
-                ref = digest
-                ret = guess
-        return ret
+        if not hasattr(self, '_otsugray'):
+            self._otsugray = 0
+            size = self.width * self.height
+            grays = list(self.bgrr[0::4])
+            ref = 0
+            for guess in range(1 + min(grays), max(grays)):
+                grayf = []
+                grayb = []
+                for gray in grays:
+                    if gray < guess:
+                        grayb.append(gray)
+                    else:
+                        grayf.append(gray)
+                grayf_len = len(grayf)
+                grayb_len = len(grayb)
+                digest = grayf_len * grayb_len * pow(
+                    sum(grayb) * grayf_len - sum(grayf) * grayb_len,
+                    2
+                )
+                print(guess, digest)
+                if digest > ref:
+                    ref = digest
+                    self._otsugray = guess
+        return self._otsugray
 
     def otsu(self, gray = 0):
         if not gray:
