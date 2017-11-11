@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 import random
+import time
 from .. import player as window
 
 class Base(object):
@@ -40,11 +41,11 @@ class Thenable(Base):
         self.actions.append(action)
         return self
 
-class Base1(Base):
+class Action(Base):
     def then(self, action):
         return Thenable().then(self).then(action)
 
-class Noop(Base1):
+class Noop(Action):
     def __init__(self, desc):
         super(Noop, self).__init__()
         self.desc = desc
@@ -54,7 +55,7 @@ class Noop(Base1):
         self.log(self.desc)
         return context
 
-class Wait(Base1):
+class Wait(Action):
     def __init__(self, nmsecs, xmsecs = 0):
         assert isinstance(nmsecs, int) and 0 < nmsecs
         assert isinstance(xmsecs, int) and 0 <= xmsecs
@@ -71,23 +72,40 @@ class Wait(Base1):
         player.idle(msecs)
         return context
 
-class Fire(Base1):
+class Fire(Action):
     def __init__(self, point, spread = 0):
-        assert isinstance(spread, int) and 0 <= spread
         super(Fire, self).__init__()
-        self.point = point if isinstance(point, window.Point) \
-            else window.Point(point)
+        if isinstance(point, tuple):
+            if isinstance(point[0], tuple):
+                self.target = window.Rect(point)
+            elif isinstance(spread, tuple):
+                self.target = window.Rect(point, spread)
+                spread = 0
+            else:
+                self.target = window.Point(point)
+        else:
+            self.target = window.Point(point, spread)
+            spread = 0
+        assert isinstance(spread, int) and 0 <= spread
         self.spread = spread
 
     def apply(self, player, context = {}):
         super(Fire, self).apply(player, context)
-        point = self.point if not self.spread \
-            else self.point.spread(self.spread)
+        if isinstance(self.target, window.Rect):
+            if self.spread:
+                point = self.target.random(self.spread)
+            else:
+                point = self.target.center
+        elif self.spread:
+            point = self.target.spread(self.spread)
+        else:
+            point = self.target
         self.log(point)
         player.click(point)
         return context
 
 __all__ = [
+    'Action',
     'Noop',
     'Wait', 'Fire'
 ]
