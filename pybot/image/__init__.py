@@ -2,7 +2,6 @@
 
 import struct
 import zlib
-import math
 import hashlib
 
 class Color(object):
@@ -49,9 +48,9 @@ class Color(object):
                 g = another.g
                 b = another.b
             except: pass
-        return math.sqrt(
-            pow(self.r - r, 2) + pow(self.g - g, 2) + pow(self.b - b, 2)
-        )
+        return (
+            (self.r - r) ** 2 + (self.g - g) ** 2 + (self.b - b) ** 2
+        ) ** .5
 
 class Pixel(Color):
     def __init__(self, pos, rgb):
@@ -219,10 +218,12 @@ class Base(object):
                     self.bgrr[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
         return type(self)((width, height), raw)
 
-    def histogram(self, accuracy = 2):
-        assert isinstance(accuracy, int) and 0 < accuracy and accuracy < 9
-        values = range(1 << accuracy)
-        bit = 8 - accuracy
+    def histogram(self, bit = 2):
+        ''' http://www.ruanyifeng.com/blog/2013/03/similar_image_search_part_ii.html
+        '''
+        assert isinstance(bit, int) and 0 < bit and bit < 9
+        values = range(1 << bit)
+        bit = 8 - bit
         space = [
             [
                 [0 for i in values] for j in values
@@ -233,7 +234,7 @@ class Base(object):
             g = self.bgrr[1 + i] >> bit
             b = self.bgrr[i] >> bit
             space[r][g][b] += 1
-        return space
+        return tuple(tuple(tuple(b) for b in r) for r in space)
 
     @classmethod
     def load(cls, filepath):
@@ -305,11 +306,9 @@ class Grayscaled(Base):
                         grayf.append(gray)
                 grayf_len = len(grayf)
                 grayb_len = len(grayb)
-                digest = grayf_len * grayb_len * pow(
-                    sum(grayb) * grayf_len - sum(grayf) * grayb_len,
-                    2
-                )
-                print(guess, digest)
+                digest = grayf_len * grayb_len * (
+                    sum(grayb) * grayf_len - sum(grayf) * grayb_len
+                ) ** 2
                 if digest > ref:
                     ref = digest
                     self._otsugray = guess
