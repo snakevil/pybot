@@ -55,6 +55,16 @@ class Noop(Action):
         self.log(self.desc)
         return context
 
+class Grab(Action):
+    def apply(self, player, context = {}):
+        super(Grab, self).apply(player, context)
+        image = player.snap()
+        if image:
+            filepath = '%s-%d.png' % (player, int(time.time()))
+            image.save(filepath)
+            self.log(filepath)
+        return context
+
 class Wait(Action):
     def __init__(self, nmsecs, xmsecs = 0):
         assert isinstance(nmsecs, int) and 0 < nmsecs
