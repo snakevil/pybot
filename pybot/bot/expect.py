@@ -7,6 +7,18 @@ class Base(object):
     def __init__(self):
         self.context = {}
 
+    def __and__(self, another):
+        assert False
+
+    def __iand__(self, another):
+        return self.__and__(another)
+
+    def __or__(self, another):
+        assert False
+
+    def __ior__(self, another):
+        return self.__or__(another)
+
     def log(self, message):
         message = '%s /%s/ %s' % (
             self.player,
@@ -27,7 +39,22 @@ class Base(object):
 class All(Base):
     def __init__(self, *expects):
         super(All, self).__init__()
-        self.expects = expects
+        self.expects = []
+        for expect in expects:
+            if isinstance(expect, All):
+                self.expects.extend(expect.expects)
+            else:
+                self.expects.append(expect)
+
+    def __and__(self, another):
+        return type(self)(self, another)
+
+    def __iand__(self, another):
+        self.expects.append(another)
+        return self
+
+    def __or__(self, another):
+        return Any(self, another)
 
     def test(self, player, context = {}):
         super(All, self).test(player, context)
@@ -39,7 +66,22 @@ class All(Base):
 class Any(Base):
     def __init__(self, *expects):
         super(Any, self).__init__()
-        self.expects = expects
+        self.expects = []
+        for expect in expects:
+            if isinstance(expect, All):
+                self.expects.extend(expect.expects)
+            else:
+                self.expects.append(expect)
+
+    def __and__(self, another):
+        return All(self, another)
+
+    def __or__(self, another):
+        return type(self)(self, another)
+
+    def __ior__(self, another):
+        self.expects.append(another)
+        return self
 
     def test(self, player, context = {}):
         super(Any, self).test(player, context)
@@ -48,7 +90,14 @@ class Any(Base):
                 return True
         return False
 
-class Pixels(Base):
+class Expect(Base):
+    def __and__(self, another):
+        return All(self, another)
+
+    def __or__(self, another):
+        return Any(self, another)
+
+class Pixels(Expect):
     def __init__(self, *pixels, **params):
         assert 0 < len(pixels)
         super(Pixels, self).__init__()
@@ -78,11 +127,11 @@ class Pixels(Base):
                 self.log('%s in D%.2f' % (pixel, distance))
         return 1 > dismatched
 
-class Otsu(Base):
+class Otsu(Expect):
     def __init__(self, region, otsu, gray = 0, threshold = 10):
         assert isinstance(otsu, str)
-        assert isinstance(threshold, int) and 0 <= threshold
         assert isinstance(gray, int) and 0 <= gray and gray < 255
+        assert isinstance(threshold, int) and 0 <= threshold
         super(Otsu, self).__init__()
         self.region = region if isinstance(region, window.Rect) \
             else window.Rect(*region)
@@ -92,13 +141,16 @@ class Otsu(Base):
 
     def test(self, player, context = {}):
         super(Otsu, self).test(player, context)
-        otsu = player.snap().crop(
+        image = player.snap()
+        if not image:
+            return False
+        otsu = image.crop(
             (self.region.left, self.region.top),
             (self.region.right, self.region.bottom)
         ).resize(8, 8).grayscale().otsu(self.gray)
         distance = self._measure(self.otsu, otsu)
         if distance > self.threshold:
-            self.log('%s in D%.2f' % (self.region, distance))
+            self.log('%s in D%.2f {%s}' % (self.region, distance, otsu))
             return False
         return True
 
@@ -115,8 +167,8 @@ class Otsu(Base):
                         distance += 1
         return 25 * distance / max(a_len, b_len)
 
-
 __all__ = [
+    'Expect',
     'All', 'Any',
     'Until',
     'Pixels', 'Otsu'
