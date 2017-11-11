@@ -26,11 +26,11 @@ class Spell(object):
         return context
 
 class Chain(object):
-    def __init__(self, script, player = ''):
+    def __init__(self, script, role = ''):
         assert isinstance(script, Script)
         self.spells = []
         self.script = script
-        self.player = player
+        self.role = role
 
     def cast(self, spell):
         assert isinstance(spell, Spell)
@@ -47,34 +47,34 @@ class Chain(object):
         return self.do(action.Wait(nmsecs, xmsecs))
 
     def perform(self, context = {}):
-        player = self.script.identify(self.player)
+        player = self.script.identify(self.role)
         for spell in self.spells:
             spell.cast(player, context)
         return context
 
-    def player(self, codename = ''):
-        return self.script.player(codename)
+    def player(self, role = ''):
+        return self.script.player(role)
 
-    def play(self, chars, **context):
-        return self.script.play(chars, **context)
+    def play(self, players, **context):
+        return self.script.play(players, **context)
 
 class Script(object):
-    def __init__(self, *codenames):
-        self.codenames = codenames or ['']
+    def __init__(self, *roles):
+        self.roles = roles or ['']
         self.chains = []
 
-    def player(self, codename = ''):
-        assert codename in self.codenames
-        chain = Chain(self, codename)
+    def player(self, role = ''):
+        assert role in self.roles
+        chain = Chain(self, role)
         self.chains.append(chain)
         return chain
 
-    def play(self, chars, **context):
-        if isinstance(chars, window.Window):
-            chars = {'': chars}
-        for codename in self.codenames:
-            assert isinstance(chars.get(codename), window.Window)
-            chars[codename].aka(codename or 'player')
+    def play(self, players, **context):
+        if isinstance(players, window.Window):
+            players = {'': players}
+        for role in self.roles:
+            assert isinstance(players.get(role), window.Window)
+            players[role].aka(role or 'player')
         context = dict({
             'tick': 250,
             'loop': 1,
@@ -82,12 +82,19 @@ class Script(object):
             'dbg': lambda message: print(message, file = sys.stderr)
         }, **context)
         context['log']('# $tick = %d' % context['tick'])
-        self.players = chars
-        for chain in self.chains:
-            chain.perform(context)
+        self.players = players
+        for index in range(context['loop']) :
+            for chain in self.chains:
+                chain.perform(context)
         self.players = None
-        for char in chars:
-            char.aka('')
+        for role in self.roles:
+            players[role].aka('')
 
-    def identify(self, codename):
-        return self.players[codename]
+    def identify(self, role):
+        return self.players[role]
+
+__all__ = [
+    'Spell',
+    'Chain',
+    'Script'
+]
