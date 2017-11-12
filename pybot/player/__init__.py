@@ -14,6 +14,9 @@ elif 'Darwin' == system:
 else:
     from ._decorate import linux as _decorate
 
+get_euid = _decorate.get_euid
+su = _decorate.su
+
 class Point(object):
     def __init__(self, x, y = None):
         if type(x) == tuple:
@@ -182,6 +185,7 @@ class Window(object):
         return self._snap
 
 __all__ = [
+    'get_euid', 'su',
     'Point', 'Rect',
     'Window'
 ]

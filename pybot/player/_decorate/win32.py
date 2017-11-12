@@ -11,6 +11,33 @@ user32 = c.windll.user32
 kernel32 = c.windll.kernel32
 gdi32 = c.windll.gdi32
 
+def get_euid():
+    try:
+        return 0 if shell32.IsUserAnAdmin() \
+            else -1
+    except:
+        return -1
+
+def su(*cmd):
+    if 1 > len(cmd):
+        exe = sys.executable
+        opts = sys.argv
+    elif '.py' == cmd[0][-3:]:
+        exe = sys.executable
+        opts = cmd
+    else:
+        exe = cmd[0]
+        opts = cmd[1:]
+    shell32.ShellExecuteW(
+        None,
+        'runas',
+        '"%s"' % (exe),
+        ' '.join(['"%s"' % i for i in opts]),
+        None,
+        1 # SW_SHOWNORMAL
+    )
+    sys.exit(0)
+
 def _query_gtor():
     _proxy = c.WINFUNCTYPE(
         c.c_bool,
@@ -199,6 +226,7 @@ def _grab_gtor():
 (grab, grab2) = _grab_gtor()
 
 __all__ = [
+    'get_euid', 'su',
     'query',
     'get_pid', 'is_minimized', 'minimize', 'restore', 'foreground',
     'get_rect', 'get_size',
