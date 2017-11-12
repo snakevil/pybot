@@ -1,10 +1,12 @@
 # encoding: utf-8
 
+import sys
 import ctypes as c
 import ctypes.wintypes as w
 import re
 import time
 
+shell32 = c.windll.shell32
 user32 = c.windll.user32
 kernel32 = c.windll.kernel32
 gdi32 = c.windll.gdi32
@@ -70,11 +72,12 @@ def _click_gtor():
         hproc = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
         result = kernel32.CloseHandle(hproc)
         assert 0 != result, 'kernel32.CloseHandle'
+    WM_MOUSEMOVE = 0x200
     WM_LBUTTONDOWN = 0x201
     WM_LBUTTONUP = 0x202
     def click(hwnd, x, y):
-        pos = ((y & 0xFFFF) << 16) | (x & 0xFFFF)
         pid = get_pid(hwnd)
+        pos = ((y & 0xFFFF) << 16) | (x & 0xFFFF)
         result = user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos)
         assert 0 != result, 'user32.PostMessageW'
         time.sleep(.01)
@@ -83,8 +86,37 @@ def _click_gtor():
         assert 0 != result, 'user32.PostMessageW'
         time.sleep(.01)
         _wait_idle(pid)
-    return click
-click = _click_gtor()
+    def drag(hwnd, start, end):
+        pid = get_pid(hwnd)
+        pos1 = (
+            (start[1] & 0xFFFF) << 16
+        ) | (
+            start[0] & 0xFFFF
+        )
+        pos2 = (
+            (start[1] + end[1] >> 1 & 0xFFFF) << 16
+        ) | (
+            start[0] + end[0] >> 1 & 0xFFFF
+        )
+        pos3 = (
+            (end[1] & 0xFFFF) << 16
+        ) | (
+            end[0] & 0xFFFF
+        )
+        result = user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos1)
+        assert 0 != result, 'user32.PostMessageW'
+        time.sleep(.01)
+        _wait_idle(pid)
+        result = user32.PostMessageW(hwnd, WM_MOUSEMOVE, 0, pos2)
+        assert 0 != result, 'user32.PostMessageW'
+        time.sleep(.01)
+        _wait_idle(pid)
+        result = user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos3)
+        assert 0 != result, 'user32.PostMessageW'
+        time.sleep(.01)
+        _wait_idle(pid)
+    return (click, drag)
+click, drag = _click_gtor()
 
 def _grab_gtor():
     SRCCOPY = 0xCC0020
@@ -170,6 +202,6 @@ __all__ = [
     'query',
     'get_pid', 'is_minimized', 'minimize', 'restore', 'foreground',
     'get_rect', 'get_size',
-    'click',
+    'click', 'drag',
     'grab', 'grab2'
 ]

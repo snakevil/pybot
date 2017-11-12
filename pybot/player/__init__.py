@@ -88,6 +88,7 @@ class Rect(object):
             self.right == right and \
             self.bottom == bottom
 
+    @property
     def center(self):
         return Point(
             self.left + (self.width >> 1),
@@ -167,13 +168,20 @@ class Window(object):
         _decorate.click(self._handle, point.x, point.y)
         return self.idle(90)
 
+    def drag(self, start, end):
+        _decorate.drag(self._handle, (start.x, start.y), (end.x, end.y))
+        return self.idle(90)
+
     def snap(self):
         if not self.width or not self.height:
             return
         now = time.time()
-        if not self._snap_due or self._snap_due < now:
+        if not hasattr(self, '_snap_due') or self._snap_due < now:
             self._snap_due = now + 0.033333
             self._snap = image.Screenshot(self, _decorate.grab(self._handle))
         return self._snap
 
-__all__ = ['Point', 'Window']
+__all__ = [
+    'Point', 'Rect',
+    'Window'
+]
