@@ -1,12 +1,12 @@
 # encoding: utf-8
 
 from .spell import Spell
-from .rite import Rite
+# from .rite import Rite
 from .action import Wait
 
 class Chain(object):
     def __init__(self, rite, role = ''):
-        assert isinstance(rite, Rite)
+        # assert isinstance(rite, Rite)
         self.spells = []
         self.rite = rite
         self.caster = role
@@ -27,7 +27,7 @@ class Chain(object):
 
     def chant(self, player, context = {}):
         for spell in self.spells:
-            spell.cast(player, context)
+            spell.chant(player, context)
         return context
 
     def role(self, role = ''):

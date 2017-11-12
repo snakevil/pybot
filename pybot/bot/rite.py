@@ -30,6 +30,6 @@ class Rite(object):
         context['log']('# $tick = %d' % context['tick'])
         for index in range(context['loop']) :
             for chain in self.chains:
-                chain.perform(players[chain.caster], context)
+                chain.chant(players[chain.caster], context)
         for role in self.roles:
             players[role].aka('')
