@@ -1,21 +1,31 @@
 # encoding: utf-8
 
 from .base import Base
+from ._codec import PNG
 
 class Greyscale(Base):
-    def __init__(self, size, raw, bit = 8):
+    def __init__(self, size, raw, depth = 8):
         ''' http://blog.csdn.net/u013467442/article/details/47616661
         '''
-        assert isinstance(bit, int) and 0 < bit and bit < 9
-        self.bit = bit
-        bgrr = bytearray(len(raw))
-        bit = 8 - bit
-        for i in range(0, len(raw), 4):
-            gray = (
-                raw[2 + i] + (raw[1 + i] << 1) + raw[i]
-            ) >> 2 + bit << bit
-            bgrr[i] = bgrr[1 + i] = bgrr[2 + i] = gray
-        super(Greyscale, self).__init__(size, bgrr)
+        assert isinstance(depth, int) and 0 < depth and depth < 9
+        super(Greyscale, self).__init__(size, raw)
+        self.depth = depth
+        length = 2 * self.width * self.height
+        ga = bytearray(length)
+        ga[1::2] = raw[3::4]
+        depth = 8 - depth
+        cursor = 0
+        while cursor < length:
+            pos = cursor << 1
+            ga[cursor] = (
+                raw[pos] + (raw[pos + 1] << 1) + raw[pos + 2]
+            ) >> 2 + depth << depth
+            cursor += 2
+        self.rgba = ga
+
+    def _png(self):
+        png = PNG(self.width, self.height, self.depth, PNG.GREYSCALE_ALPHA)
+        return png.encode(self.rgba)
 
     @property
     def otsugray(self):

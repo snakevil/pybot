@@ -33,38 +33,57 @@ class PNG(object):
         return tuple(self.data[pos:pos + 4])
 
     def encode(self, alob):
-        ahdr = [
-            b'\x00\x00\x00\r',
-            b'IHDR',
-            struct.pack(
-                '>2I5B',
-                self.width, self.height,
-                self.depth, self.TRUECOLOR, 0, 0, 0
-            )
-        ]
-        ahdr.append(struct.pack('>I', zlib.crc32(b''.join(ahdr[1:3]))))
-        rgb = bytearray(3 * self.width * self.height)
-        rgb[0::3] = alob[0::4]
-        rgb[1::3] = alob[1::4]
-        rgb[2::3] = alob[2::4]
-        width = 3 * self.width
-        adat = [
-            b'',
-            b'IDAT',
-            zlib.compress(
-                b''.join([
-                    b'\x00' + alob[width * y:width * (y + 1)] \
-                        for y in range(self.height)
-                ])
-            )
-        ]
-        adat[0] = struct.pack('>I', len(adat[2]))
-        adat.append(struct.pack('>I', zlib.crc32(b''.join(adat[1:3]))))
+        length = self.width * self.height
+        alphas = bytearray(length)
+        if self.GREYSCALE_ALPHA == self.type:
+            alphas[:] = alob[1::2]
+            if 255 == min(list(alphas)):
+                self.type = self.GREYSCALE
+                alphas[:] = alob[0::2]
+                alob = alphas
+        elif self.TRUECOLOR_ALPHA == self.type:
+            alphas[:] = alob[3::4]
+            if 255 == min(list(alphas)):
+                self.type = self.TRUECOLOR
+                alphas[0::3] = alob[0::4]
+                alphas[1::3] = alob[1::4]
+                alphas[2::3] = alob[2::4]
+                alob = alphas
         return b''.join([
             b'\x89PNG\r\n\x1a\n',
-            b''.join(ahdr),
-            b''.join(adat),
+            self._encode_chunk(
+                b'IHDR',
+                struct.pack(
+                    '>2I5B',
+                    self.width, self.height,
+                    self.depth, self.type, 0, 0, 0
+                )
+            ),
+            self._encode_chunk(
+                b'IDAT',
+                zlib.compress(self._pack(alob, self.depth))
+            ),
             b'\x00\x00\x00\x00IEND\xaeB`\x82'
+        ])
+
+    def _encode_chunk(self, id, blob):
+        chunk = [
+            struct.pack('>I', len(blob)),
+            id,
+            blob
+        ]
+        chunk.append(struct.pack('>I', zlib.crc32(b''.join(chunk[1:3]))))
+        return b''.join(chunk)
+
+    def _pack(self, samples, depth):
+        assert 8 == depth
+        size = 1 + (3 & self.type) + (1 if 3 < self.type else 0)
+        if self.INDEXED == self.type:
+            size = 1
+        width = size * self.width
+        return b''.join([
+            b'\x00' + samples[width * y:width * (y + 1)] \
+                for y in range(self.height)
         ])
 
     @classmethod

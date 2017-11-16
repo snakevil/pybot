@@ -7,14 +7,13 @@ from ._codec import PNG
 
 class Base(object):
     def __init__(self, size, raw):
-        self.rgba = raw
-        size_type = type(size)
-        if size_type == tuple or size_type == list:
+        if isinstance(size, tuple) or isinstance(size, list):
             self.width = size[0]
             self.height = size[1]
         else:
             self.width = size.width
             self.height = size.height
+        self.rgba = raw
 
     def pixel(self, x, y):
         assert 0 <= x and x < self.width
@@ -34,9 +33,12 @@ class Base(object):
             filepath += ext
         if '.png' != ext:
             assert False
-        png = PNG(self.width, self.height, type = PNG.TRUECOLOR_ALPHA)
         with open(filepath, 'wb') as hfile:
-            hfile.write(png.encode(self.rgba))
+            hfile.write(self._png())
+
+    def _png(self):
+        png = PNG(self.width, self.height, type = PNG.TRUECOLOR_ALPHA)
+        return png.encode(self.rgba)
 
     def crop(self, top_left, bottom_right):
         top = min(top_left[1], bottom_right[1])

@@ -21,5 +21,5 @@ class Image(Base):
         png = PNG.decode(blob)
         return cls((png.width, png.height), png.data)
 
-    def grayscale(self, bit = 8):
-        return Greyscale(self, self.rgba, bit)
+    def grayscale(self, depth = 8):
+        return Greyscale(self, self.rgba, depth)
