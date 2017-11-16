@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import random
 from .point import Point
 
 class Rect(object):

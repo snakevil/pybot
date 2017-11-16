@@ -2,7 +2,7 @@
 
 from .base import Base
 
-class Grayscaled(Base):
+class Greyscale(Base):
     def __init__(self, size, raw, bit = 8):
         ''' http://blog.csdn.net/u013467442/article/details/47616661
         '''
@@ -15,7 +15,7 @@ class Grayscaled(Base):
                 raw[2 + i] + (raw[1 + i] << 1) + raw[i]
             ) >> 2 + bit << bit
             bgrr[i] = bgrr[1 + i] = bgrr[2 + i] = gray
-        super(Grayscaled, self).__init__(size, bgrr)
+        super(Greyscale, self).__init__(size, bgrr)
 
     @property
     def otsugray(self):
@@ -33,7 +33,7 @@ class Grayscaled(Base):
         if not hasattr(self, '_otsugray'):
             self._otsugray = 0
             size = self.width * self.height
-            grays = list(self.bgrr[0::4])
+            grays = list(self.rgba[0::4])
             ref = 0
             for guess in range(1 + min(grays), max(grays)):
                 grayf = []
@@ -57,7 +57,7 @@ class Grayscaled(Base):
         if not gray:
             gray = self.otsugray
         buff = ''
-        for pixel in self.bgrr[0::4]:
+        for pixel in self.rgba[0::4]:
             buff += '1' if pixel > gray \
                 else '0'
         pad = 4 - len(buff) % 4
@@ -72,7 +72,7 @@ class Grayscaled(Base):
         if not gray:
             gray = self.otsugray
         raw = []
-        for pixel in self.bgrr[0::4]:
+        for pixel in self.rgba[0::4]:
             if pixel > gray:
                 raw += [255, 255, 255, 0]
             else:

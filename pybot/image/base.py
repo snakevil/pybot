@@ -3,10 +3,11 @@
 import struct
 import zlib
 from ._struct import Pixel
+from ._codec import PNG
 
 class Base(object):
     def __init__(self, size, raw):
-        self.bgrr = raw
+        self.rgba = raw
         size_type = type(size)
         if size_type == tuple or size_type == list:
             self.width = size[0]
@@ -18,10 +19,10 @@ class Base(object):
     def pixel(self, x, y):
         assert 0 <= x and x < self.width
         assert 0 <= y and y < self.height
-        pos = self.width * x + y
+        pos = (self.width * y + x) * 4
         return Pixel(
             (x, y),
-            (self.bgrr[pos + 2], self.bgrr[pos + 1], self.bgrr[pos])
+            tuple(self.rgba[pos:pos + 4])
         )
 
     def save(self, filepath):
@@ -31,50 +32,11 @@ class Base(object):
         else:
             ext = '.png'
             filepath += ext
-        if '.png' == ext:
-            return self._2png(filepath)
-
-    def _2png(self, filepath):
-        rgb = bytearray(self.width * self.height * 3)
-        rgb[0::3] = self.bgrr[2::4]
-        rgb[1::3] = self.bgrr[1::4]
-        rgb[2::3] = self.bgrr[0::4]
-        rgb = bytes(rgb)
-        width = 3 * self.width
-        nul = struct.pack('>B', 0)
-        scanlines = b''.join(
-            [nul + rgb[y * width:(1 + y) * width] for y in range(self.height)]
-        )
-        ihdr = [
-            b'',
-            b'IHDR',
-            struct.pack('>2I5B', self.width, self.height, 8, 2, 0, 0, 0),
-            b''
-        ]
-        ihdr[3] = struct.pack(
-            '>I',
-            zlib.crc32(b''.join(ihdr[1:3])) & 0xffffffff
-        )
-        ihdr[0] = struct.pack('>I', len(ihdr[2]))
-        idat = [
-            b'',
-            b'IDAT',
-            zlib.compress(scanlines),
-            b''
-        ]
-        idat[3] = struct.pack(
-            '>I',
-            zlib.crc32(b''.join(idat[1:3])) & 0xffffffff
-        )
-        idat[0] = struct.pack('>I', len(idat[2]))
-        iend = [b'', b'IEND', b'', b'']
-        iend[3] = struct.pack('>I', zlib.crc32(iend[1]) & 0xffffffff)
-        iend[0] = struct.pack('>I', len(iend[2]))
+        if '.png' != ext:
+            assert False
+        png = PNG(self.width, self.height, type = PNG.TRUECOLOR_ALPHA)
         with open(filepath, 'wb') as hfile:
-            hfile.write(struct.pack('>8B', 137, 80, 78, 71, 13, 10, 26, 10))
-            hfile.write(b''.join(ihdr))
-            hfile.write(b''.join(idat))
-            hfile.write(b''.join(iend))
+            hfile.write(png.encode(self.rgba))
 
     def crop(self, top_left, bottom_right):
         top = min(top_left[1], bottom_right[1])
@@ -91,7 +53,7 @@ class Base(object):
         raw = bytearray(line * height)
         for y in range(height):
             offset = 4 * (self.width * (top + y) + left)
-            raw[line * y:line * (y + 1)] = self.bgrr[offset:offset + line]
+            raw[line * y:line * (y + 1)] = self.rgba[offset:offset + line]
         return type(self)((width, height), raw)
 
     def resize(self, width, height):
@@ -111,7 +73,7 @@ class Base(object):
             for x in range(width):
                 x0 = int(x * ratio_x) >> 16
                 raw[offset + 4 * x:offset + 4 * x + 4] = \
-                    self.bgrr[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
+                    self.rgba[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
         return type(self)((width, height), raw)
 
     def histogram(self, bit = 2):
@@ -125,36 +87,10 @@ class Base(object):
                 [0 for i in values] for j in values
             ] for k in values
         ]
-        for i in range(0, len(self.bgrr), 4):
-            r = self.bgrr[2 + i] >> bit
-            g = self.bgrr[1 + i] >> bit
-            b = self.bgrr[i] >> bit
+        for i in range(0, len(self.rgba), 4):
+            a = (self.rgba[2 + i] << 8) // 255
+            r = self.rgba[i] * a >> bit + 8
+            g = self.rgba[1 + i] * a >> bit + 8
+            b = self.rgba[2 + i] * a >> bit + 8
             space[r][g][b] += 1
         return tuple(tuple(tuple(b) for b in r) for r in space)
-
-    @classmethod
-    def load(cls, filepath):
-        rpos = filepath.rfind('.')
-        if -1 < rpos:
-            ext = filepath[rpos:]
-        else:
-            ext = '.png'
-            filepath += ext
-        blob = ''
-        with open(filepath, 'rb') as hfile:
-            blob = hfile.read()
-        if '.png' == ext:
-            return cls._png(blob)
-
-    @classmethod
-    def _png(cls, blob):
-        width, height = struct.unpack('>2I', blob[16:24])
-        idat_size, = struct.unpack('>I', blob[33:37])
-        blob = zlib.decompress(blob[41:41 + idat_size])
-        rgbs = b''
-        for y in range(height):
-            rgbs += blob[1 + (1 + 3 * width) * y:(1 + 3 * width) * (1 + y)]
-        rgbs = bytearray(rgbs)
-        raw = bytearray(4 * width * height)
-        raw[0::4], raw[1::4], raw[2::4] = rgbs[2::3], rgbs[1::3], rgbs[0::3]
-        return cls((width, height), raw)

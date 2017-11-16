@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+import random
+import math
+
 class Point(object):
     def __init__(self, x, y = None):
         if type(x) == tuple:
