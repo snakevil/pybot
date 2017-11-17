@@ -2,6 +2,7 @@
 
 import threading
 from ..player import Window as Player
+from .event import Event
 from .trigger import Trigger
 
 class Bot(threading.Thread):
@@ -29,9 +30,19 @@ class Bot(threading.Thread):
         self.active.clear()
 
     def run(self):
+        prototype = {
+            'idle': self.player.idle,
+            'click': self.player.click,
+            'stop': self.stop,
+            'enable': self.enable,
+            'disable': self.disable
+        }
         while not self.exited:
             self.active.wait()
             self.player.idle(100)
+            prototype['screen'] = self.player.snap()
+            event = Event(prototype, self.context)
             for trigger in self.triggers:
-                if trigger.fire(self.player, self.context):
+                if trigger.fire(event):
                     break
+            self.context.update(event)

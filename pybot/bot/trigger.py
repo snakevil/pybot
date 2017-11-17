@@ -13,12 +13,12 @@ class Trigger(object):
         self.action = action
         self.timeout = timeout
 
-    def fire(self, player, context):
-        if not self.expect.test(player, context):
+    def fire(self, event):
+        if not self.expect.test(event):
             return False
         thread = threading.Thread(
-            target = self.action.invoke,
-            args = (player, context)
+            target = self.action.do,
+            args = (event,)
         )
         thread.daemon = True
         thread.start()

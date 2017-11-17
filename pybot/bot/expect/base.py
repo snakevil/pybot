@@ -13,5 +13,5 @@ class Base(object):
     def __ior__(self, another):
         return self.__or__(another)
 
-    def test(self, player, context):
+    def test(self, event):
         return False

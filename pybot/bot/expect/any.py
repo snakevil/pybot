@@ -22,8 +22,8 @@ class Any(Base):
         self.expects.append(another)
         return self
 
-    def test(self, player, context):
+    def test(self, event):
         for expect in self.expects:
-            if expect.test(player, context):
+            if expect.test(event):
                 return True
         return False

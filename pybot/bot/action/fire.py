@@ -20,7 +20,7 @@ class Fire(Action):
         assert isinstance(spread, int) and 0 <= spread
         self.spread = spread
 
-    def invoke(self, player, context):
+    def do(self, event):
         if isinstance(self.target, Rect):
             if self.spread:
                 point = self.target.random(self.spread)
@@ -30,4 +30,4 @@ class Fire(Action):
             point = self.target.spread(self.spread)
         else:
             point = self.target
-        player.click(point)
+        event.click(point)

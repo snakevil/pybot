@@ -7,5 +7,5 @@ class Noop(Action):
         super(Noop, self).__init__()
         self.desc = desc
 
-    def invoke(self, player, context):
+    def do(self, event):
         pass

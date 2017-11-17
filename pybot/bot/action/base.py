@@ -5,5 +5,5 @@ class Base(object):
         assert isinstance(timeout, float) and 0 < timeout
         self.timeout = timeout
 
-    def invoke(self, player, context):
+    def do(self, event):
         assert False

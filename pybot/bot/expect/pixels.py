@@ -19,12 +19,11 @@ class Pixels(Expect):
         ]
         self.threshold = threshold
 
-    def test(self, player, context):
-        image = player.snap()
-        if not image:
+    def test(self, event):
+        if not event.screen:
             return False
         for expected in self.pixels:
-            pixel = image.pixel(expected.x, expected.y)
+            pixel = event.screen.pixel(expected.x, expected.y)
             if self.threshold < pixel - expected:
                 return False
         return True

@@ -7,9 +7,9 @@ class Thenable(Base):
         super(Thenable, self).__init__()
         self.actions = []
 
-    def invoke(self, player, context):
+    def do(self, event):
         for action in self.actions:
-            action.invoke(player, context)
+            action.do(event)
 
     def then(self, action):
         assert isinstance(action, Base)

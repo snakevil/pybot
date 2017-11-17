@@ -14,6 +14,6 @@ class Wait(Action):
         self.xmsecs = max(nmsecs, xmsecs)
         self.timeout = self.xmsecs / 1000
 
-    def invoke(self, player, context):
+    def do(self, event):
         msecs = random.randint(self.nmsecs, self.xmsecs)
-        player.idle(msecs)
+        event.idle(msecs)

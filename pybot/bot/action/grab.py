@@ -4,8 +4,7 @@ import time
 from .action import Action
 
 class Grab(Action):
-    def invoke(self, player, context):
-        image = player.snap()
-        assert image
+    def do(self, event):
+        assert event.screen
         filepath = '%s-%d.png' % (player, int(time.time()))
-        image.save(filepath)
+        event.screen.save(filepath)

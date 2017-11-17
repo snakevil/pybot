@@ -15,11 +15,10 @@ class Fingerprint(Expect):
         self.threshold = threshold
         self.gray = gray
 
-    def test(self, player, context):
-        image = player.snap()
-        if not image:
+    def test(self, event):
+        if not event.screen:
             return False
-        digest = image.crop(
+        digest = event.screen.crop(
             (self.region.left, self.region.top),
             (self.region.right, self.region.bottom)
         ).resize(

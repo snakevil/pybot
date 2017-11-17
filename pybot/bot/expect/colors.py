@@ -15,11 +15,10 @@ class Colors(Expect):
         self.histogram = histogram
         self.threshold = threshold
 
-    def test(self, player, context):
-        image = player.snap()
-        if not image:
+    def test(self, event):
+        if not event.screen:
             return False
-        histo = image.crop(
+        histo = event.screen.crop(
             (self.region.left, self.region.top),
             (self.region.right, self.region.bottom)
         ).histogram(1)
