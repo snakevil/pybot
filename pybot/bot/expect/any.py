@@ -22,8 +22,7 @@ class Any(Base):
         self.expects.append(another)
         return self
 
-    def test(self, player, context = {}):
-        super(Any, self).test(player, context)
+    def test(self, player, context):
         for expect in self.expects:
             if expect.test(player, context):
                 return True

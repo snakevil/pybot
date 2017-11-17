@@ -22,8 +22,7 @@ class All(Base):
     def __or__(self, another):
         return Any(self, another)
 
-    def test(self, player, context = {}):
-        super(All, self).test(player, context)
+    def test(self, player, context):
         for expect in self.expects:
             if not expect.test(player, context):
                 return False

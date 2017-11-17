@@ -19,16 +19,12 @@ class Pixels(Expect):
         ]
         self.threshold = threshold
 
-    def test(self, player, context = {}):
-        super(Pixels, self).test(player, context)
+    def test(self, player, context):
         image = player.snap()
         if not image:
             return False
-        dismatched = 0
         for expected in self.pixels:
             pixel = image.pixel(expected.x, expected.y)
-            distance = pixel - expected
-            if self.threshold < distance:
-                dismatched += 1
-                self.log('%s in D%.2f' % (pixel, distance))
-        return 1 > dismatched
+            if self.threshold < pixel - expected:
+                return False
+        return True

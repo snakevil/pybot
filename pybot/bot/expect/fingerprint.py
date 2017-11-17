@@ -4,31 +4,31 @@ from ...player import Rect
 from .expect import Expect
 
 class Fingerprint(Expect):
-    def __init__(self, region, otsu, gray = 0, threshold = 10):
-        assert isinstance(otsu, str)
+    def __init__(self, region, digest, gray = 0, threshold = 10):
+        assert isinstance(digest, str)
         assert isinstance(gray, int) and 0 <= gray and gray < 255
         assert isinstance(threshold, int) and 0 <= threshold
         super(Fingerprint, self).__init__()
         self.region = region if isinstance(region, Rect) \
             else Rect(*region)
-        self.otsu = otsu
+        self.digest = digest
         self.threshold = threshold
         self.gray = gray
 
-    def test(self, player, context = {}):
-        super(Fingerprint, self).test(player, context)
+    def test(self, player, context):
         image = player.snap()
         if not image:
             return False
-        otsu = image.crop(
+        digest = image.crop(
             (self.region.left, self.region.top),
             (self.region.right, self.region.bottom)
-        ).resize(8, 8).grayscale().otsu(self.gray)
-        distance = self._measure(self.otsu, otsu)
-        if distance > self.threshold:
-            self.log('%s in D%.2f {%s}' % (self.region, distance, otsu))
-            return False
-        return True
+        ).resize(
+            8, 8
+        ).grayscale().binary(
+            self.gray
+        ).digest()
+        distance = self._measure(self.digest, digest)
+        return distance <= self.threshold
 
     def _measure(self, a, b):
         a_len = len(a)

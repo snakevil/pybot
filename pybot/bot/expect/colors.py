@@ -15,8 +15,7 @@ class Colors(Expect):
         self.histogram = histogram
         self.threshold = threshold
 
-    def test(self, player, context = {}):
-        super(Colors, self).test(player, context)
+    def test(self, player, context):
         image = player.snap()
         if not image:
             return False
@@ -25,10 +24,7 @@ class Colors(Expect):
             (self.region.right, self.region.bottom)
         ).histogram(1)
         distance = self._measure(self.histogram, histo)
-        if distance > self.threshold:
-            self.log('%s in D%.2f {%s}' % (self.region, distance, histo))
-            return False
-        return True
+        return distance <= self.threshold
 
     def _measure(self, a, b):
         a_flat = [k for i in a for j in i for k in j]
