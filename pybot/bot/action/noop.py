@@ -7,7 +7,5 @@ class Noop(Action):
         super(Noop, self).__init__()
         self.desc = desc
 
-    def apply(self, player, context = {}):
-        super(Noop, self).apply(player, context)
-        self.log(self.desc)
-        return context
+    def invoke(self, player, context):
+        pass

@@ -7,13 +7,12 @@ class Thenable(Base):
         super(Thenable, self).__init__()
         self.actions = []
 
-    def apply(self, player, context = {}):
-        super(Thenable, self).apply(player, context)
+    def invoke(self, player, context):
         for action in self.actions:
-            context = action.apply(player, context)
-        return context
+            action.invoke(player, context)
 
     def then(self, action):
         assert isinstance(action, Base)
         self.actions.append(action)
+        self.timeout += action.timeout
         return self

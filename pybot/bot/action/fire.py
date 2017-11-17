@@ -5,7 +5,7 @@ from .action import Action
 
 class Fire(Action):
     def __init__(self, point, spread = 0):
-        super(Fire, self).__init__()
+        super(Fire, self).__init__(1)
         if isinstance(point, tuple):
             if isinstance(point[0], tuple):
                 self.target = Rect(point)
@@ -20,8 +20,7 @@ class Fire(Action):
         assert isinstance(spread, int) and 0 <= spread
         self.spread = spread
 
-    def apply(self, player, context = {}):
-        super(Fire, self).apply(player, context)
+    def invoke(self, player, context):
         if isinstance(self.target, Rect):
             if self.spread:
                 point = self.target.random(self.spread)
@@ -31,6 +30,4 @@ class Fire(Action):
             point = self.target.spread(self.spread)
         else:
             point = self.target
-        self.log(point)
         player.click(point)
-        return context
