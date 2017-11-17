@@ -36,10 +36,10 @@ class PNG(object):
         length = self.width * self.height
         alphas = bytearray(length)
         if self.GREYSCALE_ALPHA == self.type:
-            alphas[:] = alob[1::2]
+            alphas[:] = alob[3::4]
             if 255 == min(list(alphas)):
                 self.type = self.GREYSCALE
-                alphas[:] = alob[0::2]
+                alphas[:] = alob[0::4]
                 alob = alphas
         elif self.TRUECOLOR_ALPHA == self.type:
             alphas[:] = alob[3::4]
@@ -315,11 +315,14 @@ class PNG(object):
         rgba[0::4] = samples[0::1]
         rgba[1::4] = samples[0::1]
         rgba[2::4] = samples[0::1]
-        cursor = 0
-        while cursor < length:
-            if palette[0] != rgba[cursor:cursor + 3]:
-                rgba[cursor + 4] = 255
-            cursor += 4
+        if palette[0]:
+            cursor = 0
+            while cursor < length:
+                if palette[0] != rgba[cursor:cursor + 3]:
+                    rgba[cursor + 4] = 255
+                cursor += 4
+        else:
+            rgba[3::4] = [255] * (length >> 2)
         return rgba
 
     def _extract_trucolor(self, samples, palette):
@@ -328,11 +331,14 @@ class PNG(object):
         rgba[0::4] = samples[0::3]
         rgba[1::4] = samples[1::3]
         rgba[2::4] = samples[2::3]
-        cursor = 0
-        while cursor < length:
-            if palette[0] != rgba[cursor:cursor + 3]:
-                rgba[cursor + 3] = 255
-            cursor += 4
+        if palette[0]:
+            cursor = 0
+            while cursor < length:
+                if palette[0] != rgba[cursor:cursor + 3]:
+                    rgba[cursor + 3] = 255
+                cursor += 4
+        else:
+            rgba[3::4] = [255] * (length >> 2)
         return rgba
 
     def _extract_indexed(self, samples, palette):
