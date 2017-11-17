@@ -45,6 +45,7 @@ class PNG(object):
             alphas[:] = alob[3::4]
             if 255 == min(list(alphas)):
                 self.type = self.TRUECOLOR
+                alphas = bytearray(3 * length)
                 alphas[0::3] = alob[0::4]
                 alphas[1::3] = alob[1::4]
                 alphas[2::3] = alob[2::4]

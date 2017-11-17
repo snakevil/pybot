@@ -3,3 +3,5 @@
 from ._struct import *
 from .image import Image
 from .screenshot import Screenshot
+
+load = Image.load
