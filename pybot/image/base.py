@@ -78,21 +78,33 @@ class Base(object):
                     self.rgba[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
         return type(self)((width, height), raw)
 
-    def histogram(self, bit = 2):
+    def histogram(self, depth = 2):
         ''' http://www.ruanyifeng.com/blog/2013/03/similar_image_search_part_ii.html
         '''
-        assert isinstance(bit, int) and 0 < bit and bit < 9
-        values = range(1 << bit)
-        bit = 8 - bit
+        assert isinstance(depth, int) and 0 < depth and depth < 9
+        values = range(1 << depth)
+        depth = 8 - depth
         space = [
             [
                 [0 for i in values] for j in values
             ] for k in values
         ]
         for i in range(0, len(self.rgba), 4):
-            a = (self.rgba[2 + i] << 8) // 255
-            r = self.rgba[i] * a >> bit + 8
-            g = self.rgba[1 + i] * a >> bit + 8
-            b = self.rgba[2 + i] * a >> bit + 8
+            a = self.rgba[i + 3]
+            if not a:
+                space[0][0][0] += 1
+                continue
+            r = self.rgba[i]
+            g = self.rgba[i + 1]
+            b = self.rgba[i + 2]
+            if 255 == a:
+                r >>= depth
+                g >>= depth
+                b >>= depth
+            else:
+                a = (a << 8) // 255
+                r >>= depth + 8
+                g >>= depth + 8
+                b >>= depth + 8
             space[r][g][b] += 1
         return tuple(tuple(tuple(b) for b in r) for r in space)

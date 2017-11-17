@@ -106,17 +106,17 @@ class PNG(object):
         ids = [b'IHDR', b'PLTE', b'IDAT', b'IEND', b'tRNS', b'sBIT']
         mask = 0xffffffff
         chunks = {}
-        cursor = 8
+        i = 8
         length = len(blob)
-        while cursor < length:
-            size, = struct.unpack('>I', blob[cursor:cursor + 4])
-            cursor += 4
-            id = blob[cursor:cursor + 4]
-            cursor += 4
-            data = blob[cursor:cursor + size]
-            cursor += size
-            crc32, = struct.unpack('>I', blob[cursor:cursor + 4])
-            cursor += 4
+        while i < length:
+            size, = struct.unpack('>I', blob[i:i + 4])
+            i += 4
+            id = blob[i:i + 4]
+            i += 4
+            data = blob[i:i + size]
+            i += size
+            crc32, = struct.unpack('>I', blob[i:i + 4])
+            i += 4
             if id not in ids:
                 continue
             assert mask & zlib.crc32(id + data) == crc32
@@ -182,25 +182,23 @@ class PNG(object):
             __unpack = self._unpack_1
         # 已解码的采样流
         samples = bytearray(size * self.width * self.height)
-        y = 0
-        cursor = 0
-        while y < self.height:
-            if 1 == alob[cursor]:
-                self._filter_recon_sub(alob, cursor, width, fdst)
-            elif 2 == alob[cursor]:
-                self._filter_recon_up(alob, cursor, width, fdst)
-            elif 3 == alob[cursor]:
-                self._filter_recon_average(alob, cursor, width, fdst)
-            elif 4 == alob[cursor]:
-                self._filter_recon_paeth(alob, cursor, width, fdst)
+        i = 0
+        for y in range(self.height):
+            if 1 == alob[i]:
+                self._filter_recon_sub(alob, i, width, fdst)
+            elif 2 == alob[i]:
+                self._filter_recon_up(alob, i, width, fdst)
+            elif 3 == alob[i]:
+                self._filter_recon_average(alob, i, width, fdst)
+            elif 4 == alob[i]:
+                self._filter_recon_paeth(alob, i, width, fdst)
             __unpack(
                 samples,
-                alob[cursor + 1:cursor + width],
-                cursor - y,
+                alob[i + 1:i + width],
+                i - y,
                 width - 1
             )
-            y += 1
-            cursor += width
+            i += width
         if self.TRUECOLOR_ALPHA == self.type:
             return self._extract_trucolor_alpha(samples)
         if self.TRUECOLOR == self.type:
@@ -213,51 +211,41 @@ class PNG(object):
 
     def _filter_recon_sub(self, alob, start, length, offset):
         line = alob[start:start + length]
-        cursor = offset + 1
-        while cursor < length:
-            line[cursor] = (line[cursor] + line[cursor - offset]) & 255
-            cursor += 1
+        for i in range(offset + 1, length):
+            line[i] = (line[i] + line[i - offset]) & 255
         alob[start:start + length] = line
 
     def _filter_recon_up(self, alob, start, length, offset):
         line0 = bytearray(length) if not start else alob[start - length:start]
         line = alob[start:start + length]
-        cursor = 1
-        while cursor < length:
-            line[cursor] = (line[cursor] + line0[cursor]) & 255
-            cursor += 1
+        for i in range(length):
+            line[i] = (line[i] + line0[i]) & 255
         alob[start:start + length] = line
 
     def _filter_recon_average(self, alob, start, length, offset):
         line0 = bytearray(length) if not start else alob[start - length:start]
         line = alob[start:start + length]
-        cursor = 1
-        while cursor <= offset:
-            line[cursor] = (line[cursor] + (line0[cursor] >> 1)) & 255
-            cursor += 1
-        while cursor < length:
-            line[cursor] = (
-                line[cursor] + (line[cursor - offset] + line0[cursor] >> 1)
+        for i in range(1, offset + 1):
+            line[i] = (line[i] + (line0[i] >> 1)) & 255
+        for i in range(offset + 1, length):
+            line[i] = (
+                line[i] + (line[i - offset] + line0[i] >> 1)
             ) & 255
-            cursor += 1
         alob[start:start + length] = line
 
     def _filter_recon_paeth(self, alob, start, length, offset):
         line0 = bytearray(length) if not start else alob[start - length:start]
         line = alob[start:start + length]
-        cursor = 1
-        while cursor <= offset:
-            line[cursor] = (line[cursor] + line0[cursor]) & 255
-            cursor += 1
-        while cursor < length:
-            line[cursor] = (
-                line[cursor] + self._filter_paeth(
-                    line[cursor - offset],
-                    line0[cursor],
-                    line0[cursor - offset]
+        for i in range(1, offset + 1):
+            line[i] = (line[i] + line0[i]) & 255
+        for i in range(offset + 1, length):
+            line[i] = (
+                line[i] + self._filter_paeth(
+                    line[i - offset],
+                    line0[i],
+                    line0[i - offset]
                 )
             ) & 255
-            cursor += 1
         alob[start:start + length] = line
 
     def _filter_paeth(self, a, b, c):
@@ -269,43 +257,35 @@ class PNG(object):
             else b if pb <= pc \
                 else c
 
-    def _unpack_1(self, bits, stream, offset):
-        cursor = 0
-        while cursor < length:
-            bits = raw[cursor]
+    def _unpack_1(self, stream, raw, offset, length):
+        for i in range(length):
+            bits = raw[i]
             samples = [
                 bits >> 7, bits >> 6 & 1, bits >> 5 & 1, bits >> 4 & 1,
                 bits >> 3 & 1, bits >> 2 & 1, bits >> 1 & 1, bits & 1
             ]
-            i = 0
-            while i < 8:
-                stream[offset + i] = samples[i] * 255
+            for j in range(8):
+                stream[offset + j] = 255 if samples[j] else 0
             offset += 8
-            cursor += 1
 
     def _unpack_2(self, stream, raw, offset, length):
-        cursor = 0
-        while cursor < length:
-            bits = raw[cursor]
+        for i in range(length):
+            bits = raw[i]
             samples = [bits >> 6, bits >> 4 & 3, bits >> 2 & 3, bits & 3]
-            i = 0
-            while i < 4:
-                stream[offset + i] = (samples[i] << 6) \
-                    + (samples[i] << 4) \
-                    + (samples[i] << 2) \
-                    + samples[i]
+            for j in range(4):
+                stream[offset + j] = (samples[j] << 6) \
+                    + (samples[j] << 4) \
+                    + (samples[j] << 2) \
+                    + samples[j]
             offset += 4
-            cursor += 1
 
     def _unpack_4(self, stream, raw, offset, length):
-        cursor = 0
-        while cursor < length:
-            bits = raw[cursor] >> 4
+        for i in range(length):
+            bits = raw[i] >> 4
             stream[offset] = (bits << 4) + bits
-            bits = raw[cursor] & 15
+            bits = raw[i] & 15
             stream[offset + 1] = (bits << 4) + bits
             offset += 2
-            cursor += 1
 
     def _unpack_8(self, stream, raw, offset, length):
         stream[offset:offset + length] = raw
@@ -317,11 +297,9 @@ class PNG(object):
         rgba[1::4] = samples[0::1]
         rgba[2::4] = samples[0::1]
         if palette[0]:
-            cursor = 0
-            while cursor < length:
-                if palette[0] != rgba[cursor:cursor + 3]:
-                    rgba[cursor + 4] = 255
-                cursor += 4
+            for i in range(0, length, 4):
+                if palette[0] != rgba[i:i + 3]:
+                    rgba[i + 3] = 255
         else:
             rgba[3::4] = [255] * (length >> 2)
         return rgba
@@ -333,11 +311,9 @@ class PNG(object):
         rgba[1::4] = samples[1::3]
         rgba[2::4] = samples[2::3]
         if palette[0]:
-            cursor = 0
-            while cursor < length:
-                if palette[0] != rgba[cursor:cursor + 3]:
-                    rgba[cursor + 3] = 255
-                cursor += 4
+            for i in range(0, length, 4):
+                if palette[0] != rgba[i:i + 3]:
+                    rgba[i + 3] = 255
         else:
             rgba[3::4] = [255] * (length >> 2)
         return rgba
@@ -345,10 +321,8 @@ class PNG(object):
     def _extract_indexed(self, samples, palette):
         length = self.width * self.height
         rgba = bytearray(4 * length)
-        index = 0
-        while index < length:
-            rgba[4 * index:4 * index + 4] = palette[samples[index]]
-            index += 1
+        for i in range(length):
+            rgba[4 * i:4 * i + 4] = palette[samples[i]]
         return rgba
 
     def _extract_greyscale_alpha(self, samples):
