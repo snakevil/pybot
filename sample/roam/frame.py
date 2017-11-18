@@ -12,7 +12,7 @@ class Collapsed(expect.Fingerprint):
 
 class Normal(expect.Fingerprint):
     def __init__(self):
-        self(Normal, self).__init__(
+        super(Normal, self).__init__(
             ((126, 361), (202, 437)),
             '001c3e3e3e7c3814',
             103
@@ -20,7 +20,7 @@ class Normal(expect.Fingerprint):
 
 class Guild(expect.Fingerprint):
     def __init__(self):
-        self(Guild, self).__init__(
+        super(Guild, self).__init__(
             ((654, 347), (722, 415)),
             'fec800087f3e0c14',
             75
