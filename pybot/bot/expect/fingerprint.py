@@ -8,6 +8,7 @@ class Fingerprint(Expect):
         assert isinstance(digest, str)
         assert isinstance(gray, int) and 0 <= gray and gray < 255
         assert isinstance(threshold, int) and 0 <= threshold
+        super(Fingerprint, self).__init__(**spots)
         self._region = region if isinstance(region, Rect) \
             else Rect(*region)
         self._digest = digest

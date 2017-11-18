@@ -3,16 +3,18 @@
 from .base import Base
 
 class Any(Base):
-    def __init__(self, *expects):
-        self.expects = []
+    def __init__(self, *expects, **spots):
+        super(Any, self).__init__(**spots)
+        self._spots = self.spots.copy()
+        self._expects = []
         for expect in expects:
             if isinstance(expect, All):
-                self.expects.extend(expect.expects)
+                self._expects.extend(expect._expects)
             else:
-                self.expects.append(expect)
+                self._expects.append(expect)
 
     def __repr__(self):
-        return 'Any(%s)' % repr(self.expects)[1:-1]
+        return 'Any(%s)' % repr(self._expects)[1:-1]
 
     def __and__(self, another):
         return All(self, another)
@@ -21,11 +23,13 @@ class Any(Base):
         return type(self)(self, another)
 
     def __ior__(self, another):
-        self.expects.append(another)
+        self._expects.append(another)
         return self
 
     def test(self, event):
-        for expect in self.expects:
+        self.spots = self._spots.copy()
+        for expect in self._expects:
             if expect.test(event):
+                self.spots.update(expect.spots)
                 return True
         return False

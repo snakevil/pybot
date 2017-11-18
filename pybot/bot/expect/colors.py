@@ -4,11 +4,12 @@ from ...player import Rect
 from .expect import Expect
 
 class Colors(Expect):
-    def __init__(self, region, histogram, threshold = 10):
+    def __init__(self, region, histogram, threshold = 10, **spots):
         assert isinstance(histogram, tuple) \
             and isinstance(histogram[0], tuple) \
             and isinstance(histogram[0][0], tuple)
         assert isinstance(threshold, int) and 0 <= threshold
+        super(Colors, self).__init__(**spots)
         self._region = region if isinstance(region, Rect) \
             else Rect(*region)
         self._histogram = histogram

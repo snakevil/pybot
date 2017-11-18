@@ -19,7 +19,8 @@ class Trigger(object):
     def fire(self, event):
         if not self._expect.test(event):
             return False
-        event.log('&%s triggered' % self._title, 0)
+        event['__spots__'] = self._expect.spots
+        event.log('?%s triggered' % self._title, 0)
         thread = threading.Thread(
             target = self._action.do,
             args = (event,)
@@ -28,5 +29,5 @@ class Trigger(object):
         thread.start()
         thread.join(self._timeout or self._action.timeout)
         if thread.is_alive():
-            event.log('&%s timeout' % self._timeout, 2)
+            event.log('?%s timeout' % self._timeout, 2)
         return True

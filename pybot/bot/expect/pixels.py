@@ -11,16 +11,17 @@ class Pixels(Expect):
             threshold = pixels[-1]
             del pixels[-1]
         assert isinstance(threshold, int) and 0 <= threshold
-        self.pixels = [
+        super(Pixels, self).__init__(**spots)
+        self._pixels = [
             pixel if isinstance(pixel, Pixel) \
                 else Pixel(*pixel) \
                 for pixel in pixels
         ]
-        self.threshold = threshold
+        self._threshold = threshold
 
     def __repr__(self):
         return 'Pixels(%s%s)' % (
-            repr(self.pixels)[1:-1],
+            repr(self._pixels)[1:-1],
             '' if 10 == self._threshold \
                 else ', %d' % self._threshold
         )
@@ -28,8 +29,8 @@ class Pixels(Expect):
     def test(self, event):
         if not event.screen:
             return False
-        for expected in self.pixels:
+        for expected in self._pixels:
             pixel = event.screen.pixel(expected.x, expected.y)
-            if self.threshold < pixel - expected:
+            if self._threshold < pixel - expected:
                 return False
         return True
