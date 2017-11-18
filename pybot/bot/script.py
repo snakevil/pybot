@@ -31,21 +31,29 @@ class Script(object):
     def perform(self, players, **context):
         if isinstance(players, Player):
             players = {'': players}
-        self._bots = {}
         signal.signal(signal.SIGINT, self.halt)
         signal.signal(signal.SIGTERM, self.halt)
+        fps = context.get('fps')
+        if fps:
+            del context['fps']
+        if not isinstance(fps, int) or 0 > fps or 60 < fps:
+            fps = 10
+        print('FPS: %d' % fps)
+        tick = 1000 / fps
+        self._bots = {}
         for role in self.roles:
             assert isinstance(players.get(role), Player)
             players[role].aka(role or 'player')
-            self._bots[role] = Bot(players[role], context.copy())
+            self._bots[role] = Bot(players[role], context.copy(), tick)
             for trigger in self._triggers[role]:
                 self._bots[role].handle(trigger)
             self._bots[role].start()
+        tick /= 1000
         while True:
             running = True
             for role in self.roles:
                 running = running and self._bots[role].is_alive()
             if running:
-                self._bots[self.roles[0]].join(.1)
+                self._bots[self.roles[0]].join(tick)
             else:
                 break

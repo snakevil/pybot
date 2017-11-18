@@ -6,12 +6,11 @@ from .event import Event
 from .trigger import Trigger
 
 class Bot(threading.Thread):
-    def __init__(self, player, context):
+    def __init__(self, player, context, tick):
         super(Bot, self).__init__()
-        assert isinstance(player, Player)
-        assert isinstance(context, dict)
         self.player = player
         self.context = context
+        self.tick = tick
         self.active = threading.Event()
         self.exited = False
         self.triggers = []
@@ -40,7 +39,7 @@ class Bot(threading.Thread):
         }
         while not self.exited:
             self.active.wait()
-            self.player.idle(100)
+            self.player.idle(self.tick)
             wrapper['screen'] = self.player.snap()
             event = Event(wrapper, self.context)
             for trigger in self.triggers:
