@@ -22,7 +22,7 @@ class Rect(object):
         self.width = self.right - self.left
         self.height = self.bottom - self.top
 
-    def __str__(self):
+    def __repr__(self):
         return 'Rect((%d, %d), (%d, %d))' % (self.left, self.top, self.right, self.bottom)
 
     def __eq__(self, another):

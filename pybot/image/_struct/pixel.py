@@ -8,7 +8,7 @@ class Pixel(Color):
         self.y = pos[1]
         super(Pixel, self).__init__(*rgba)
 
-    def __str__(self):
+    def __repr__(self):
         return 'Pixel((%d, %d), (%d, %d, %d, %d))' % (
             self.x,
             self.y,
