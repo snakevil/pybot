@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 import signal
-from ..player import Window as Player
+from ..player import get_euid, su, Window as Player
 from .expect import Base as Expect
 from .action import Base as Action
 from .trigger import Trigger
@@ -47,8 +47,8 @@ class Script(object):
             self._bots[role].stop()
 
     def perform(self, players, **context):
-        if isinstance(players, Player):
-            players = {'': players}
+        if get_euid():
+            su()
 
         self._log = context.get('log')
         if self._log:
@@ -66,6 +66,9 @@ class Script(object):
         signal.signal(signal.SIGINT, self.halt)
         signal.signal(signal.SIGTERM, self.halt)
 
+
+        if isinstance(players, Player):
+            players = {'': players}
         tick = 1000 / fps
         self._bots = {}
         for role in self._roles:
