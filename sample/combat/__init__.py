@@ -1,4 +1,4 @@
 # encoding: utf-8
 
-from . import frame
+from .frame import *
 from .dualrush import DualRush
