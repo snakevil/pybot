@@ -18,6 +18,13 @@ class Pixels(Expect):
         ]
         self.threshold = threshold
 
+    def __repr__(self):
+        return 'Pixels(%s%s)' % (
+            repr(self.pixels)[1:-1],
+            '' if 10 == self._threshold \
+                else ', %d' % self._threshold
+        )
+
     def test(self, event):
         if not event.screen:
             return False

@@ -1,6 +1,9 @@
 # encoding: utf-8
 
 class Base(object):
+    def __repr__(self):
+        return '%s()' % type(self).__name__
+
     def __and__(self, another):
         assert False
 

@@ -11,6 +11,9 @@ class Any(Base):
             else:
                 self.expects.append(expect)
 
+    def __repr__(self):
+        return 'Any(%s)' % repr(self.expects)[1:-1]
+
     def __and__(self, another):
         return All(self, another)
 
