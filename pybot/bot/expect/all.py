@@ -4,7 +4,6 @@ from .base import Base
 
 class All(Base):
     def __init__(self, *expects):
-        super(All, self).__init__()
         self.expects = []
         for expect in expects:
             if isinstance(expect, All):

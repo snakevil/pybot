@@ -8,7 +8,6 @@ class Fingerprint(Expect):
         assert isinstance(digest, str)
         assert isinstance(gray, int) and 0 <= gray and gray < 255
         assert isinstance(threshold, int) and 0 <= threshold
-        super(Fingerprint, self).__init__()
         self.region = region if isinstance(region, Rect) \
             else Rect(*region)
         self.digest = digest
@@ -25,7 +24,7 @@ class Fingerprint(Expect):
             8, 8
         ).grayscale().binary(
             self.gray
-        ).digest()
+        ).digest
         distance = self._measure(self.digest, digest)
         return distance <= self.threshold
 

@@ -8,7 +8,9 @@ class Trigger(object):
     def __init__(self, expect, action, timeout = 0):
         assert isinstance(expect, Expect)
         assert isinstance(action, Action)
-        assert isinstance(timeout, float) and 0 <= timeout
+        assert (
+            isinstance(timeout, float) or isinstance(timeout, int)
+        ) and 0 <= timeout
         self.expect = expect
         self.action = action
         self.timeout = timeout

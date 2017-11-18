@@ -10,4 +10,4 @@ class Screenshot(Image):
         alob[1::4] = raw[1::4]
         alob[2::4] = raw[0::4]
         alob[3::4] = [255] * (length >> 2)
-        super(Screenshot, self).__init__(self, size, alob)
+        super(Screenshot, self).__init__(size, alob)

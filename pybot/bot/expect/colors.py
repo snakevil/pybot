@@ -9,7 +9,6 @@ class Colors(Expect):
             and isinstance(histogram[0], tuple) \
             and isinstance(histogram[0][0], tuple)
         assert isinstance(threshold, int) and 0 <= threshold
-        super(Colors, self).__init__()
         self.region = region if isinstance(region, Rect) \
             else Rect(*region)
         self.histogram = histogram

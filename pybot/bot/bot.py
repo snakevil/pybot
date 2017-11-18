@@ -7,6 +7,7 @@ from .trigger import Trigger
 
 class Bot(threading.Thread):
     def __init__(self, player, context):
+        super(Bot, self).__init__()
         assert isinstance(player, Player)
         assert isinstance(context, dict)
         self.player = player
@@ -30,7 +31,7 @@ class Bot(threading.Thread):
         self.active.clear()
 
     def run(self):
-        prototype = {
+        wrapper = {
             'idle': self.player.idle,
             'click': self.player.click,
             'stop': self.stop,
@@ -40,8 +41,8 @@ class Bot(threading.Thread):
         while not self.exited:
             self.active.wait()
             self.player.idle(100)
-            prototype['screen'] = self.player.snap()
-            event = Event(prototype, self.context)
+            wrapper['screen'] = self.player.snap()
+            event = Event(wrapper, self.context)
             for trigger in self.triggers:
                 if trigger.fire(event):
                     break

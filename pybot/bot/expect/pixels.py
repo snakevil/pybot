@@ -6,7 +6,6 @@ from .expect import Expect
 class Pixels(Expect):
     def __init__(self, *pixels, **params):
         assert 0 < len(pixels)
-        super(Pixels, self).__init__()
         threshold = params.get('threshold') or 10
         if isinstance(pixels[-1], int):
             threshold = pixels[-1]
