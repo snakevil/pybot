@@ -7,7 +7,8 @@ class Success(Fingerprint):
         super(Success, self).__init__(
             ((257, 84), (413, 137)),
             'a28282aade767464',
-            104
+            104,
+            ok = (((600, 225), (800, 450)), 5)
         )
 
     def __str__(self):

@@ -14,7 +14,9 @@ class Ready(expect.All):
             expect.Colors(
                 region,
                 (((645, 0), (0, 0)), ((904, 0), (3143, 12)))
-            )
+            ),
+            ok = (region, 5),
+            cancel = (((89, 355), (201, 397)), 5)
         ])
 
     def __str__(self):

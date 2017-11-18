@@ -9,50 +9,26 @@ class DualRush(bot.Script):
         super(DualRush, self).__init__('leader', 'member')
         self.role('leader').on(
             Ready(),
-            bot.action.Fire(
-                ((596, 355), (708, 397)),
-                4
-            )
+            bot.action.OK()
         ).on(
             frame.Begin(),
-            bot.action.Fire(
-                (730, 346),
-                48
-            )
+            bot.action.OK()
         ).on(
             frame.Success(),
-            bot.action.Fire(
-                ((542, 222), (800, 450)),
-                10
-            )
+            bot.action.OK()
         ).on(
             frame.Reward(),
-            bot.action.Fire(
-                ((542, 222), (800, 450)),
-                10
-            )
+            bot.action.OK()
         ).on(
             frame.End(),
-            bot.action.Fire(
-                ((672, 32), (800, 450)),
-                10
-            )
+            bot.action.OK()
         ).role('member').on(
             frame.Success(),
-            bot.action.Fire(
-                ((542, 222), (800, 450)),
-                10
-            )
+            bot.action.OK()
         ).on(
             frame.Reward(),
-            bot.action.Fire(
-                ((542, 222), (800, 450)),
-                10
-            )
+            bot.action.OK()
         ).on(
             frame.End(),
-            bot.action.Fire(
-                ((672, 32), (800, 450)),
-                10
-            )
+            bot.action.OK()
         )
