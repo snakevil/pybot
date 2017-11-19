@@ -107,4 +107,4 @@ class Base(object):
                 g >>= depth + 8
                 b >>= depth + 8
             space[r][g][b] += 1
-        return tuple(tuple(tuple(b) for b in r) for r in space)
+        return tuple(b for r in space for g in r for b in g)
