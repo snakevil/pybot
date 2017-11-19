@@ -4,7 +4,7 @@ from ...player import Rect
 from .expect import Expect
 
 class Fingerprint(Expect):
-    def __init__(self, region, digest, gray, threshold = 10):
+    def __init__(self, region, digest, gray, threshold = 10, **spots):
         assert isinstance(digest, str)
         assert isinstance(gray, int) and 0 <= gray and gray < 255
         assert isinstance(threshold, int) and 0 <= threshold

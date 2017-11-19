@@ -5,7 +5,7 @@ from .base import Base
 class Any(Base):
     def __init__(self, *expects, **spots):
         super(Any, self).__init__(**spots)
-        self._spots = self.spots.copy()
+        self.spots = self.spots.copy()
         self._expects = []
         for expect in expects:
             if isinstance(expect, All):
@@ -27,7 +27,7 @@ class Any(Base):
         return self
 
     def test(self, event):
-        self.spots = self._spots.copy()
+        self.spots = self.spots.copy()
         for expect in self._expects:
             if expect.test(event):
                 self.spots.update(expect.spots)

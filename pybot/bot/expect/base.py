@@ -6,7 +6,7 @@ class Base(object):
     def __init__(self, **spots):
         self.spots = {}
         for id in spots:
-            self.spot(spot, *spots[id])
+            self.spot(id, *spots[id])
 
     def __repr__(self):
         return '%s()' % type(self).__name__
@@ -36,7 +36,7 @@ class Base(object):
             region = Point(point, spread)
             spread = 0
         assert isinstance(spread, int) and 0 <= spread
-        self._spots[id] = (region, spread)
+        self.spots[id] = (region, spread)
         return self
 
     def test(self, event):

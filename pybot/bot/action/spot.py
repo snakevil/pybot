@@ -5,6 +5,7 @@ from .action import Action
 
 class Spot(Action):
     def __init__(self, id):
+        super(Spot, self).__init__(1)
         self._id = id
 
     def __repr__(self):
@@ -13,7 +14,7 @@ class Spot(Action):
     def do(self, event):
         spot = event['__spots__'].get(self._id)
         if spot:
-            event.log('!%r represented as %r' % (self, spot))
+            event.log('!%r represented as Fire%r' % (self, spot))
             if isinstance(spot[0], Rect):
                 if spot[1]:
                     point = spot[0].random(spot[1])

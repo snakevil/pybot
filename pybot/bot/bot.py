@@ -31,8 +31,9 @@ class Bot(threading.Thread):
         self._active.clear()
 
     def run(self):
-        self._['log']('%s ready' % self._['player'], 0)
+        self._['log']('%s hooked' % self._['player'], 0)
         wrapper = {
+            'target': str(self._['player']),
             'idle': self._['player'].idle,
             'click': self._['player'].click,
             'stop': self.stop,
@@ -49,4 +50,4 @@ class Bot(threading.Thread):
                 if trigger.fire(event):
                     break
             self.context.update(event)
-        self._['log']('%s gone' % self._['player'], 0)
+        self._['log']('%s freed' % self._['player'], 0)

@@ -4,9 +4,10 @@ from ...image import Pixel
 from .expect import Expect
 
 class Pixels(Expect):
-    def __init__(self, *pixels, **params):
+    def __init__(self, *pixels, **spots):
         assert 0 < len(pixels)
-        threshold = params.get('threshold') or 10
+        threshold = spots.get('threshold') or 10
+        del spots['threshold']
         if isinstance(pixels[-1], int):
             threshold = pixels[-1]
             del pixels[-1]
