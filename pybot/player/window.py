@@ -13,7 +13,6 @@ from ..image import Screenshot
 from ._struct import Rect
 
 get_euid = _decorate.get_euid
-
 su = _decorate.su
 
 class Window(object):
@@ -88,8 +87,7 @@ class Window(object):
     def snap(self):
         if not self.width or not self.height:
             return
-        now = time.time()
-        if not hasattr(self, '_snap_due') or self._snap_due < now:
-            self._snap_due = now + 0.033333
-            self._snap = Screenshot(self, _decorate.grab(self._handle))
-        return self._snap
+        return Screenshot(
+            _decorate.get_size(self._handle),
+            _decorate.grab(self._handle)
+        )

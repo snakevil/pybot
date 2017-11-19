@@ -168,6 +168,26 @@ def _grab_gtor():
             ('bmiHeader', BITMAPINFOHEADER),
             ('bmiColors', w.DWORD * 3)
         ]
+    def _rgba(hdc, hbmp, width, height):
+        info = BITMAPINFO()
+        info.bmiHeader.biSize = c.sizeof(BITMAPINFOHEADER)
+        info.bmiHeader.biWidth = width
+        info.bmiHeader.biHeight = - height
+        info.bmiHeader.biPlanes = 1
+        info.bmiHeader.biBitCount = 32
+        info.bmiHeader.biCompression = BI_RGB
+        info.bmiHeader.biClrUsed = 0
+        info.bmiHeader.biClrImportant = 0
+        length = width * height * 4
+        bgrr = c.create_string_buffer(length)
+        lines = gdi32.GetDIBits(hdc, hbmp, 0, height, bgrr, c.byref(info), 0)
+        assert lines == height, 'gdi32.GetDIBits'
+        rgba = bytearray(length)
+        rgba[0::4] = bgrr[2::4]
+        rgba[1::4] = bgrr[1::4]
+        rgba[2::4] = bgrr[0::4]
+        rgba[3::4] = [255] * (length >> 2)
+        return rgba
     def grab(hwnd):
         hdcw = user32.GetDC(hwnd)
         hdcm = gdi32.CreateCompatibleDC(hdcw)
@@ -182,22 +202,11 @@ def _grab_gtor():
             SRCCOPY
         )
         assert 0 != result, 'gdi32.BitBlt'
-        info = BITMAPINFO()
-        info.bmiHeader.biSize = c.sizeof(BITMAPINFOHEADER)
-        info.bmiHeader.biWidth = width
-        info.bmiHeader.biHeight = - height
-        info.bmiHeader.biPlanes = 1
-        info.bmiHeader.biBitCount = 32
-        info.bmiHeader.biCompression = BI_RGB
-        info.bmiHeader.biClrUsed = 0
-        info.bmiHeader.biClrImportant = 0
-        bgra = c.create_string_buffer(width * height * 4)
-        lines = gdi32.GetDIBits(hdcm, hbmp, 0, height, bgra, c.byref(info), 0)
-        assert lines == height, 'gdi32.GetDIBits'
+        rgba = _rgba(hdcm, hbmp, width, height)
         gdi32.DeleteObject(hbmp)
         gdi32.DeleteObject(hdcm)
         user32.ReleaseDC(hwnd, hdcw)
-        return bytearray(bgra)
+        return rgba
     def grab2(hwnd):
         hdcw = user32.GetDC(hwnd)
         hdcm = gdi32.CreateCompatibleDC(hdcw)
@@ -206,24 +215,13 @@ def _grab_gtor():
         gdi32.SelectObject(hdcm, hbmp)
         result = user32.PrintWindow(hwnd, hdcm, PW_CLIENTONLY)
         assert 0 != result, 'user32.PrintWindow'
-        info = BITMAPINFO()
-        info.bmiHeader.biSize = c.sizeof(BITMAPINFOHEADER)
-        info.bmiHeader.biWidth = width
-        info.bmiHeader.biHeight = - height
-        info.bmiHeader.biPlanes = 1
-        info.bmiHeader.biBitCount = 32
-        info.bmiHeader.biCompression = BI_RGB
-        info.bmiHeader.biClrUsed = 0
-        info.bmiHeader.biClrImportant = 0
-        bgra = c.create_string_buffer(width * height * 4)
-        lines = gdi32.GetDIBits(hdcm, hbmp, 0, height, bgra, c.byref(info), 0)
-        assert lines == height, 'gdi32.GetDIBits'
+        rgba = _rgba(hdcm, hbmp, width, height)
         gdi32.DeleteObject(hbmp)
         gdi32.DeleteObject(hdcm)
         user32.ReleaseDC(hwnd, hdcw)
-        return bytearray(bgra)
-    return (grab, grab2)
-(grab, grab2) = _grab_gtor()
+        return rgba
+    return grab
+grab = _grab_gtor()
 
 __all__ = [
     'get_euid', 'su',
@@ -231,5 +229,5 @@ __all__ = [
     'get_pid', 'is_minimized', 'minimize', 'restore', 'foreground',
     'get_rect', 'get_size',
     'click', 'drag',
-    'grab', 'grab2'
+    'grab'
 ]
