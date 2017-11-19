@@ -18,17 +18,25 @@ class DualRush(bot.Script):
             bot.action.OK()
         ).on(
             frame.Reward(),
-            bot.action.OK()
+            bot.action.OK().then(
+                bot.action.Wait(1000, 2000)
+            )
         ).on(
             frame.End(),
-            bot.action.OK()
+            bot.action.OK().then(
+                bot.action.Wait(1000, 2000)
+            )
         ).role('member').on(
             frame.Success(),
             bot.action.OK()
         ).on(
             frame.Reward(),
-            bot.action.OK()
+            bot.action.OK().then(
+                bot.action.Wait(1000, 2000)
+            )
         ).on(
             frame.End(),
-            bot.action.OK()
+            bot.action.OK().then(
+                bot.action.Wait(1000, 2000)
+            )
         )

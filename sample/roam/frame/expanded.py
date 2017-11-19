@@ -2,9 +2,9 @@
 
 from pybot.bot.expect import Fingerprint
 
-class Normal(Fingerprint):
+class Expanded(Fingerprint):
     def __init__(self):
-        super(Normal, self).__init__(
+        super(Expanded, self).__init__(
             ((126, 361), (202, 437)),
             '001c3e3e3e7c3814',
             103

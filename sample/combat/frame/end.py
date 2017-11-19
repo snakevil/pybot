@@ -7,7 +7,7 @@ class End(Fingerprint):
         super(End, self).__init__(
             ((297, 370), (477, 394)),
             'cbb3b6f4e86060e0',
-            28
+            28,
             ok = (((700, 225), (800, 450)), 5)
         )
 
