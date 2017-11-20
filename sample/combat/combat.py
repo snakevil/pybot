@@ -5,7 +5,7 @@ from .frame import *
 
 class Combat(bot.Competence):
     def __init__(self):
-        super(Combat, self).__init__(
+        super(Combat, self).__init__([
             bot.Reflex(
                 Begin(),
                 bot.react.OK()
@@ -26,4 +26,4 @@ class Combat(bot.Competence):
                     bot.react.Wait(500, 1000)
                 )
             )
-        )
+        ])

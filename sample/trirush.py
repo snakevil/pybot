@@ -8,7 +8,7 @@ class TriRush(bot.Mission):
     def __init__(self):
         super(TriRush, self).__init__('Aby', 'Baal', 'Cain')
         self.co('Aby').on(
-            team.Ready(),
+            team.Ready3(),
             bot.react.OK()
         ).clone(
             combat.Combat()
