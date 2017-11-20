@@ -13,6 +13,7 @@ class Mission(object):
         self._co = self._companies[0]
         self._reflexes = {company: [] for company in self._companies}
         self._log = self._logger
+        self._level = 2
         self._bots = {}
 
     def company(self, company = ''):
@@ -46,11 +47,15 @@ class Mission(object):
         return self
 
     def _logger(self, message, level = 0):
-        desc = 'debg' if not level \
-            else 'info' if 1 == level \
-            else 'warn' if 2 == level \
-            else 'errr'
-        print('[%s] %s' % (desc, message))
+        if level < self._level:
+            return
+        desc = '[debg] ' if not level \
+            else '[info] ' if 1 == level \
+            else '[warn] ' if 2 == level \
+            else '[errr] ' if 3 == level \
+            else '[crit] ' if 4 == level \
+            else ''
+        print('%s%s' % (desc, message))
 
     def halt(self, signum, frame):
         sigid = 'SIGINT' if 2 == signum \
@@ -65,17 +70,27 @@ class Mission(object):
             su()
 
         self._log = context.get('log')
-        if self._log:
-            del context['log']
+        del context['log']
         if not callable(self._log):
+            if isinstance(self._log, int):
+                self._level = 255 if 0 > self._log \
+                    else min(255, self._log)
+            else:
+                level = str(self._log).lower()
+                self._level = 0 if 'debug' == level or 'debg' == level \
+                    else 1 if 'info' == level \
+                    else 2 if 'warn' == level or 'warning' == level \
+                    else 3 if 'errr' == level or 'error' == level \
+                    else 4 if 'crit' == level or 'critical' == level \
+                        or 'fatal' == level \
+                    else 255
             self._log = self._logger
 
         fps = context.get('fps')
-        if fps:
-            del context['fps']
+        del context['fps']
         if not isinstance(fps, int) or 0 > fps or 60 < fps:
             fps = 10
-        self._log('FPS: %d' % fps, 2)
+        self._log('FPS: %d' % fps, 1)
 
         signal.signal(signal.SIGINT, self.halt)
         signal.signal(signal.SIGTERM, self.halt)
@@ -97,7 +112,7 @@ class Mission(object):
             for reflex in self._reflexes[company]:
                 self._bots[company].inject(reflex)
             self._bots[company].start()
-        self._log('started', 1)
+        self._log('started', 255)
 
         tick /= 1000
         while True:
@@ -108,4 +123,4 @@ class Mission(object):
                 self._bots[self._companies[0]].join(tick)
             else:
                 break
-        self._log('completed :)', 1)
+        self._log('completed :)', 255)
