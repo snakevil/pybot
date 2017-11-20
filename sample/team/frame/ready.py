@@ -20,4 +20,4 @@ class Ready(expect.All):
         )
 
     def __str__(self):
-        return '组队就绪'
+        return '双组就绪'

@@ -27,4 +27,4 @@ class Ready3(expect.All):
         )
 
     def __str__(self):
-        return '组队就绪'
+        return '全组就绪'
