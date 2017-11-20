@@ -1,9 +1,9 @@
 # encoding: utf-8
 
 from ...player import Point, Rect
-from .action import Action
+from .react import React
 
-class Spot(Action):
+class Spot(React):
     def __init__(self, id):
         super(Spot, self).__init__(1)
         self._id = id

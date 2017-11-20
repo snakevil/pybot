@@ -3,11 +3,11 @@
 import signal
 from ..player import get_euid, su, Window as Player
 from .expect import Base as Expect
-from .action import Base as Action
-from .trigger import Trigger
+from .react import Base as React
+from .reflex import Reflex
 from .bot import Bot
 
-class Script(object):
+class Mission(object):
     def __init__(self, *roles):
         self._roles = roles or ['']
         self._target = self._roles[0]
@@ -19,13 +19,13 @@ class Script(object):
         self._target = role
         return self
 
-    def on(self, expect, action, title = ''):
+    def on(self, expect, react, title = ''):
         assert isinstance(expect, Expect)
-        assert isinstance(action, Action)
+        assert isinstance(react, React)
         self._triggers[self._target].append(
-            Trigger(
+            Reflex(
                 expect,
-                action,
+                react,
                 title = title
             )
         )
@@ -46,7 +46,7 @@ class Script(object):
         for role in self._roles:
             self._bots[role].stop()
 
-    def perform(self, players, **context):
+    def exec(self, players, **context):
         if get_euid():
             su()
 
