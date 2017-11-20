@@ -5,6 +5,7 @@ from ..player import get_euid, su, Window as Player
 from .expect import Base as Expect
 from .react import Base as React
 from .reflex import Reflex
+from .competence import Competence
 from .bot import Bot
 
 class Mission(object):
@@ -13,7 +14,7 @@ class Mission(object):
         self._co = self._companies[0]
         self._reflexes = {company: [] for company in self._companies}
         self._log = self._logger
-        self._level = 2
+        self._level = 1
         self._bots = {}
 
     def company(self, company = ''):
@@ -70,33 +71,38 @@ class Mission(object):
             su()
 
         self._log = context.get('log')
-        del context['log']
-        if not callable(self._log):
-            if isinstance(self._log, int):
-                self._level = 255 if 0 > self._log \
-                    else min(255, self._log)
-            else:
-                level = str(self._log).lower()
-                self._level = 0 if 'debug' == level or 'debg' == level \
-                    else 1 if 'info' == level \
-                    else 2 if 'warn' == level or 'warning' == level \
-                    else 3 if 'errr' == level or 'error' == level \
-                    else 4 if 'crit' == level or 'critical' == level \
-                        or 'fatal' == level \
-                    else 255
+        if self._log:
+            del context['log']
+            if not callable(self._log):
+                if isinstance(self._log, int):
+                    self._level = 255 if 0 > self._log \
+                        else min(255, self._log)
+                else:
+                    level = str(self._log).lower()
+                    self._level = 0 if 'debug' == level or 'debg' == level \
+                        else 1 if 'info' == level \
+                        else 2 if 'warn' == level or 'warning' == level \
+                        else 3 if 'errr' == level or 'error' == level \
+                        else 4 if 'crit' == level or 'critical' == level \
+                            or 'fatal' == level \
+                        else 255
+                self._log = self._logger
+        else:
             self._log = self._logger
 
         fps = context.get('fps')
-        del context['fps']
+        if fps:
+            del context['fps']
         if not isinstance(fps, int) or 0 > fps or 60 < fps:
             fps = 10
-        self._log('FPS: %d' % fps, 1)
+        self._log('FPS: %d' % fps, 2)
 
         timeout = context.get('timeout')
-        del context['timeout']
+        if timeout:
+            del context['timeout']
         if not isinstance(timeout, int) or 0 > timeout:
             timeout = 60
-        self._log('Timeout: %d' % timeout, 1)
+        self._log('Timeout: %d' % timeout, 2)
 
         signal.signal(signal.SIGINT, self.halt)
         signal.signal(signal.SIGTERM, self.halt)

@@ -17,7 +17,7 @@ class Bot(threading.Thread):
         self.enable()
 
     def stop(self):
-        self._.log('%s cleaning...' % self._player, 1)
+        self._['log']('%s cleaning...' % self._player, 1)
         self._exited = True
 
     def inject(self, reflex):
@@ -30,7 +30,7 @@ class Bot(threading.Thread):
         self._enabled.clear()
 
     def run(self):
-        self._.log('%s injected' % self._player, 2)
+        self._['log']('%s injected' % self._player, 2)
         wrapper = {
             'target': str(self._player),
             'idle': self._player.idle,
@@ -38,11 +38,11 @@ class Bot(threading.Thread):
             'stop': self.stop,
             'enable': self.enable,
             'disable': self.disable,
-            'log': self._.log
+            'log': self._['log']
         }
         while not self._exited:
             self._enabled.wait()
-            self._player.idle(self._.tick)
+            self._player.idle(self._['tick'])
             wrapper['screen'] = self._player.snap()
             now = time.time()
             if not wrapper['screen']:
@@ -56,7 +56,7 @@ class Bot(threading.Thread):
                 if reflex.do(event):
                     self._activity = now
                     break
-            if self._activity + self._.timeout < now:
+            if self._activity + self._['timeout'] < now:
                 event.log('%s timeout' % event.target, 3)
                 snappath = '%s-timeout-%d.png' % (
                     event.target[1:],
@@ -71,4 +71,4 @@ class Bot(threading.Thread):
                     1
                 )
             self.context.update(event)
-        self._.log('%s reset' % self._player, 2)
+        self._['log']('%s reset' % self._player, 2)

@@ -5,9 +5,7 @@ from .expect import Expect
 
 class Colors(Expect):
     def __init__(self, region, histogram, threshold = 10, **spots):
-        assert isinstance(histogram, tuple) \
-            and isinstance(histogram[0], tuple) \
-            and isinstance(histogram[0][0], tuple)
+        assert isinstance(histogram, tuple) and 8 == len(histogram)
         assert isinstance(threshold, int) and 0 <= threshold
         super(Colors, self).__init__(**spots)
         self._region = region if isinstance(region, Rect) \
@@ -34,10 +32,8 @@ class Colors(Expect):
         return distance <= self._threshold
 
     def _measure(self, a, b):
-        a_flat = [k for i in a for j in i for k in j]
-        b_flat = [k for i in b for j in i for k in j]
         distance = 0
-        for ai, bi in zip(a_flat, b_flat):
+        for ai, bi in zip(a, b):
             distance += (ai - bi) ** 2
         return 100 * distance ** .5 / (
             self._region.width * self._region.height
