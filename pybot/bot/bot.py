@@ -14,15 +14,15 @@ class Bot(threading.Thread):
         self.context = context
         self._active = threading.Event()
         self._exited = False
-        self._triggers = []
+        self._reflexes = []
         self.enable()
 
     def stop(self):
         self._['log']('%s cleaning...' % self._['player'], 0)
         self._exited = True
 
-    def handle(self, trigger):
-        self._triggers.append(trigger)
+    def inject(self, reflex):
+        self._reflexes.append(reflex)
 
     def enable(self):
         self._active.set()
@@ -31,7 +31,7 @@ class Bot(threading.Thread):
         self._active.clear()
 
     def run(self):
-        self._['log']('%s hooked' % self._['player'], 0)
+        self._['log']('%s injected' % self._['player'], 0)
         wrapper = {
             'target': str(self._['player']),
             'idle': self._['player'].idle,
@@ -46,8 +46,8 @@ class Bot(threading.Thread):
             self._['player'].idle(self._['tick'])
             wrapper['screen'] = self._['player'].snap()
             event = Event(wrapper, self.context)
-            for trigger in self._triggers:
-                if trigger.fire(event):
+            for reflex in self._reflexes:
+                if reflex.do(event):
                     break
             self.context.update(event)
-        self._['log']('%s freed' % self._['player'], 0)
+        self._['log']('%s reset' % self._['player'], 0)

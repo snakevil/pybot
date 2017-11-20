@@ -8,27 +8,41 @@ from .reflex import Reflex
 from .bot import Bot
 
 class Mission(object):
-    def __init__(self, *roles):
-        self._roles = roles or ['']
-        self._target = self._roles[0]
-        self._triggers = {role: [] for role in self._roles}
+    def __init__(self, *companies):
+        self._companies = companies or ['']
+        self._co = self._companies[0]
+        self._reflexes = {company: [] for company in self._companies}
         self._log = self._logger
+        self._bots = {}
 
-    def role(self, role = ''):
-        assert role in self._roles
-        self._target = role
+    def company(self, company = ''):
+        assert company in self._companies
+        self._co = company
         return self
+
+    def co(self, company = ''):
+        return self.company(company)
 
     def on(self, expect, react, title = ''):
         assert isinstance(expect, Expect)
         assert isinstance(react, React)
-        self._triggers[self._target].append(
+        self._reflexes[self._co].append(
             Reflex(
                 expect,
                 react,
                 title = title
             )
         )
+        return self
+
+    def inject(self, reflex):
+        assert isinstance(reflex, Reflex)
+        self._reflexes[self._co].append(Reflex)
+        return self
+
+    def clone(self, competence):
+        assert isinstance(competence, Competence)
+        self._reflexes[self._co].extend(competence)
         return self
 
     def _logger(self, message, level = 0):
@@ -42,9 +56,9 @@ class Mission(object):
         sigid = 'SIGINT' if 2 == signum \
             else 'SIGTERM' if 15 == signum \
             else signum
-        self._log('quitting for %s received...' % sigid, 0)
-        for role in self._roles:
-            self._bots[role].stop()
+        self._log('aborting for %s received...' % sigid, 0)
+        for company in self._companies:
+            self._bots[company].stop()
 
     def exec(self, players, **context):
         if get_euid():
@@ -71,27 +85,27 @@ class Mission(object):
             players = {'': players}
         tick = 1000 / fps
         self._bots = {}
-        for role in self._roles:
-            assert isinstance(players.get(role), Player)
-            players[role].aka(role or 'player')
-            self._bots[role] = Bot(
-                players[role],
+        for company in self._companies:
+            assert isinstance(players.get(company), Player)
+            players[company].aka(company or 'Adam')
+            self._bots[company] = Bot(
+                players[company],
                 context.copy(),
                 tick,
                 self._log
             )
-            for trigger in self._triggers[role]:
-                self._bots[role].handle(trigger)
-            self._bots[role].start()
+            for reflex in self._reflexes[company]:
+                self._bots[company].inject(reflex)
+            self._bots[company].start()
         self._log('started', 1)
 
         tick /= 1000
         while True:
             running = True
-            for role in self._roles:
-                running = running and self._bots[role].is_alive()
+            for company in self._companies:
+                running = running and self._bots[company].is_alive()
             if running:
-                self._bots[self._roles[0]].join(tick)
+                self._bots[self._companies[0]].join(tick)
             else:
                 break
-        self._log('goodbye :)', 1)
+        self._log('completed :)', 1)
