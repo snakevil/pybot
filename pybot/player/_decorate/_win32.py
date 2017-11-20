@@ -192,6 +192,7 @@ def _grab_gtor():
         hdcw = user32.GetDC(hwnd)
         hdcm = gdi32.CreateCompatibleDC(hdcw)
         width, height = get_size(hwnd)
+        assert width and height
         hbmp = gdi32.CreateCompatibleBitmap(hdcw, width, height)
         gdi32.SelectObject(hdcm, hbmp)
         result = gdi32.BitBlt(
@@ -211,6 +212,7 @@ def _grab_gtor():
         hdcw = user32.GetDC(hwnd)
         hdcm = gdi32.CreateCompatibleDC(hdcw)
         width, height = get_size(hwnd)
+        assert width and height
         hbmp = gdi32.CreateCompatibleBitmap(hdcw, width, height)
         gdi32.SelectObject(hdcm, hbmp)
         result = user32.PrintWindow(hwnd, hdcm, PW_CLIENTONLY)

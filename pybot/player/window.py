@@ -86,7 +86,9 @@ class Window(object):
 
     def snap(self):
         if not self.width or not self.height:
-            return
+            self.restore().idle(90)
+            if not self.width or not self.height:
+                return
         return Screenshot(
             _decorate.get_size(self._handle),
             _decorate.grab(self._handle)
