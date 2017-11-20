@@ -2,5 +2,5 @@
 
 from .frame import *
 from .leader import Leader
-from .leader3 import leader3
+from .leader3 import Leader3
 from .member import Member
