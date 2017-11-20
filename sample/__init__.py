@@ -5,3 +5,5 @@ from . import roam
 from . import team
 from .duorush import DuoRush
 from .trirush import TriRush
+from .mumu import MuMu
+from .pc import PC
