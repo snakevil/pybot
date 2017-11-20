@@ -92,6 +92,12 @@ class Mission(object):
             fps = 10
         self._log('FPS: %d' % fps, 1)
 
+        timeout = context.get('timeout')
+        del context['timeout']
+        if not isinstance(timeout, int) or 0 > timeout:
+            timeout = 60
+        self._log('Timeout: %d' % timeout, 1)
+
         signal.signal(signal.SIGINT, self.halt)
         signal.signal(signal.SIGTERM, self.halt)
 
@@ -106,8 +112,9 @@ class Mission(object):
             self._bots[company] = Bot(
                 players[company],
                 context.copy(),
-                tick,
-                self._log
+                tick = tick,
+                log = self._log,
+                timeout = timeout
             )
             for reflex in self._reflexes[company]:
                 self._bots[company].inject(reflex)

@@ -8,4 +8,4 @@ class Log(React):
         self._msg = message
 
     def do(self, event):
-        event.log(self._msg, 1)
+        event.log('%s logged %r' % (event.target, self._msg), 1)
