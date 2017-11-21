@@ -25,5 +25,9 @@ class Combat(bot.Competence):
                 bot.react.OK().then(
                     bot.react.Wait(500, 1000)
                 )
+            ),
+            bot.Reflex(
+                Manual(),
+                bot.react.OK()
             )
         ])
