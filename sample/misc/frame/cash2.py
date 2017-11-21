@@ -12,3 +12,6 @@ class Cash2(Bounty):
                 74
             )
         )
+
+    def __str__(self):
+        return '协作邀请：2W金'

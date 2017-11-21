@@ -12,3 +12,6 @@ class Sushi(Bounty):
                 93
             )
         )
+
+    def __str__(self):
+        return '协作邀请：寿司'

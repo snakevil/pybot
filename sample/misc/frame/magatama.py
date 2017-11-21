@@ -12,3 +12,6 @@ class Magatama(Bounty):
                 103
             )
         )
+
+    def __str__(self):
+        return '协作邀请：勾玉'
