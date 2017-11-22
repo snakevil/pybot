@@ -17,6 +17,10 @@ class Combat(bot.Competence):
                 bot.react.OK()
             ),
             bot.Reflex(
+                Failure(),
+                bot.react.OK()
+            ),
+            bot.Reflex(
                 Reward(),
                 bot.react.OK().then(
                     bot.react.Wait(1000)
