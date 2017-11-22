@@ -12,3 +12,6 @@ class Again(expect.Fingerprint):
             check = (((339, 213), (363, 237)), 4),
             cancel = (((270, 250), (382, 292)), 5)
         )
+
+    def __str__(self):
+        return '继续组队'

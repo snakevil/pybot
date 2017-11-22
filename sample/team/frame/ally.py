@@ -14,4 +14,4 @@ class Ally(expect.Fingerprint):
         )
 
     def __str__(self):
-        return '受邀结队'
+        return '自动接受'
