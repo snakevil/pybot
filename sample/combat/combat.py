@@ -8,7 +8,9 @@ class Combat(bot.Competence):
         super(Combat, self).__init__([
             bot.Reflex(
                 Begin(),
-                bot.react.OK()
+                bot.react.OK().then(
+                    bot.react.Wait(1000)
+                )
             ),
             bot.Reflex(
                 Success(),
@@ -17,17 +19,13 @@ class Combat(bot.Competence):
             bot.Reflex(
                 Reward(),
                 bot.react.OK().then(
-                    bot.react.Wait(500, 1000)
+                    bot.react.Wait(1000)
                 )
             ),
             bot.Reflex(
                 End(),
                 bot.react.OK().then(
-                    bot.react.Wait(500, 1000)
+                    bot.react.Wait(1000)
                 )
-            ),
-            bot.Reflex(
-                Manual(),
-                bot.react.OK()
             )
         ])
