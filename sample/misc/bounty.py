@@ -7,7 +7,11 @@ class Bounty(bot.Competence):
     def __init__(self):
         super(Bounty, self).__init__([
             bot.Reflex(
-                Cash2(),
+                Coin3(),
+                bot.react.OK()
+            ),
+            bot.Reflex(
+                Coin2(),
                 bot.react.Cancel()
             ),
             bot.Reflex(
