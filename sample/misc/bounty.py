@@ -21,5 +21,9 @@ class Bounty(bot.Competence):
             bot.Reflex(
                 Magatama(),
                 bot.react.OK()
+            ),
+            bot.Reflex(
+                Orochi(),
+                bot.react.OK()
             )
         ])
