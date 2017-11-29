@@ -8,13 +8,27 @@ class Thenable(Base):
         super(Thenable, self).__init__()
         self._reacts = []
 
+    def __add__(self, other):
+        if not isinstance(other, Base):
+            raise core.EType(other, type(self))
+        ret = Thenable()
+        for react in self._reacts:
+            ret.then(react)
+        return ret.then(other)
+
+    def __radd__(self, other):
+        raise core.EType(other, type(self))
+
+    def __iadd__(self, other):
+        if not isinstance(other, Base):
+            raise core.EType(other, Base)
+        self._reacts.append(other)
+        self.timeout += other.timeout
+
     def do(self, event):
         for react in self._reacts:
             react.do(event)
 
     def then(self, react):
-        if not isinstance(react, Base):
-            raise core.EType(react, Base)
-        self._reacts.append(react)
-        self.timeout += react.timeout
+        self += react
         return self
