@@ -1,43 +1,42 @@
 # encoding: utf-8
 
+from ... import core
+
 def get_euid():
-    assert False
+    raise core.ETodo('player._decorate._linux.get_euid')
 
 def su(*cmd):
-    assert False
+    raise core.ETodo('player._decorate._linux.su')
 
 def query(pattern):
-    assert False
+    raise core.ETodo('player._decorate._linux.query')
 
 def get_pid(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.get_pid')
 
 def is_minimized(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.is_minimized')
 
 def minimize(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.minimize')
 
 def restore(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.restore')
 
 def foreground(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.foreground')
 
 def get_rect(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.get_rect')
 
 def get_size(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.get_size')
 
 def click(hwnd, x, y):
-    assert False
+    raise core.ETodo('player._decorate._linux.click')
 
 def drag(hwnd, start, end):
-    assert False
+    raise core.ETodo('player._decorate._linux.drag')
 
 def grab(hwnd):
-    assert False
-
-def grab2(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._linux.grab')

@@ -5,6 +5,8 @@ import ctypes as c
 import ctypes.wintypes as w
 import re
 import time
+from .eminimized import EMinimized
+from .ewin32 import EWin32
 
 shell32 = c.windll.shell32
 user32 = c.windll.user32
@@ -56,7 +58,8 @@ def _query_gtor():
         _stack[0] = pattern
         _stack[1] = []
         result = user32.EnumWindows(_proxy(_every), 0)
-        assert 0 != result, 'user32.EnumWindows'
+        if not result:
+            raise EWin32('user32.EnumWindows')
         return _stack[1]
     return query
 query = _query_gtor()
@@ -64,7 +67,8 @@ query = _query_gtor()
 def get_pid(hwnd):
     pid = c.c_int()
     result = user32.GetWindowThreadProcessId(hwnd, c.byref(pid))
-    assert 0 < result, 'user32.GetWindowThreadProcessId'
+    if not result:
+        raise EWin32('user32.GetWindowThreadProcessId')
     return pid.value
 
 def is_minimized(hwnd):
@@ -79,18 +83,21 @@ restore = _show_gtor(9)
 
 def foreground(hwnd):
     result = user32.SetForegroundWindow(hwnd)
-    assert 0 != result, 'user32.SetForegroundWindow'
+    if not result:
+        raise EWin32('user32.SetForegroundWindow')
 
 def get_rect(hwnd):
     rect = w.RECT()
     result = user32.GetWindowRect(hwnd, c.byref(rect))
-    assert 0 != result, 'user32.GetWindowRect'
+    if not result:
+        raise EWin32('user32.GetWindowRect')
     return ((rect.left, rect.top), (rect.right, rect.bottom))
 
 def get_size(hwnd):
     rect = w.RECT()
     result = user32.GetClientRect(hwnd, c.byref(rect))
-    assert 0 != result, 'user32.GetClientRect'
+    if not result:
+        raise EWin32('user32.GetClientRect')
     return (rect.right - rect.left, rect.bottom - rect.top)
 
 def _click_gtor():
@@ -98,7 +105,8 @@ def _click_gtor():
     def _wait_idle(pid):
         hproc = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
         result = kernel32.CloseHandle(hproc)
-        assert 0 != result, 'kernel32.CloseHandle'
+        if not result:
+            raise EWin32('kernel32.CloseHandle')
     WM_MOUSEMOVE = 0x200
     WM_LBUTTONDOWN = 0x201
     WM_LBUTTONUP = 0x202
@@ -106,11 +114,13 @@ def _click_gtor():
         pid = get_pid(hwnd)
         pos = ((y & 0xFFFF) << 16) | (x & 0xFFFF)
         result = user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos)
-        assert 0 != result, 'user32.PostMessageW'
+        if not result:
+            raise EWin32('user32.PostMessageW')
         time.sleep(.01)
         _wait_idle(pid)
         result = user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos)
-        assert 0 != result, 'user32.PostMessageW'
+        if not result:
+            raise EWin32('user32.PostMessageW')
         time.sleep(.01)
         _wait_idle(pid)
     def drag(hwnd, start, end):
@@ -131,15 +141,18 @@ def _click_gtor():
             end[0] & 0xFFFF
         )
         result = user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos1)
-        assert 0 != result, 'user32.PostMessageW'
+        if not result:
+            raise EWin32('user32.PostMessageW')
         time.sleep(.01)
         _wait_idle(pid)
         result = user32.PostMessageW(hwnd, WM_MOUSEMOVE, 0, pos2)
-        assert 0 != result, 'user32.PostMessageW'
+        if not result:
+            raise EWin32('user32.PostMessageW')
         time.sleep(.01)
         _wait_idle(pid)
         result = user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos3)
-        assert 0 != result, 'user32.PostMessageW'
+        if not result:
+            raise EWin32('user32.PostMessageW')
         time.sleep(.01)
         _wait_idle(pid)
     return (click, drag)
@@ -181,7 +194,8 @@ def _grab_gtor():
         length = width * height * 4
         bgrr = c.create_string_buffer(length)
         lines = gdi32.GetDIBits(hdc, hbmp, 0, height, bgrr, c.byref(info), 0)
-        assert lines == height, 'gdi32.GetDIBits'
+        if lines != height:
+            raise EWin32('gdi32.GetDIBits')
         rgba = bytearray(length)
         rgba[0::4] = bgrr[2::4]
         rgba[1::4] = bgrr[1::4]
@@ -192,7 +206,8 @@ def _grab_gtor():
         hdcw = user32.GetDC(hwnd)
         hdcm = gdi32.CreateCompatibleDC(hdcw)
         width, height = get_size(hwnd)
-        assert width and height
+        if 1 > width or 1 > height:
+            raise EMinimized()
         hbmp = gdi32.CreateCompatibleBitmap(hdcw, width, height)
         gdi32.SelectObject(hdcm, hbmp)
         result = gdi32.BitBlt(
@@ -202,7 +217,8 @@ def _grab_gtor():
             0, 0,
             SRCCOPY
         )
-        assert 0 != result, 'gdi32.BitBlt'
+        if not result:
+            raise EWin32('gdi32.BitBlt')
         rgba = _rgba(hdcm, hbmp, width, height)
         gdi32.DeleteObject(hbmp)
         gdi32.DeleteObject(hdcm)
@@ -212,11 +228,13 @@ def _grab_gtor():
         hdcw = user32.GetDC(hwnd)
         hdcm = gdi32.CreateCompatibleDC(hdcw)
         width, height = get_size(hwnd)
-        assert width and height
+        if 1 > width or 1 > height:
+            raise EMinimized()
         hbmp = gdi32.CreateCompatibleBitmap(hdcw, width, height)
         gdi32.SelectObject(hdcm, hbmp)
         result = user32.PrintWindow(hwnd, hdcm, PW_CLIENTONLY)
-        assert 0 != result, 'user32.PrintWindow'
+        if not result:
+            raise EWin32('user32.PrintWindow')
         rgba = _rgba(hdcm, hbmp, width, height)
         gdi32.DeleteObject(hbmp)
         gdi32.DeleteObject(hdcm)

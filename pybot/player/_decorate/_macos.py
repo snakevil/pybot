@@ -1,43 +1,42 @@
 # encoding: utf-8
 
+from ... import core
+
 def get_euid():
-    assert False
+    raise core.ETodo('player._decorate._macos.get_euid')
 
 def su(*cmd):
-    assert False
+    raise core.ETodo('player._decorate._macos.su')
 
 def query(pattern):
-    assert False
+    raise core.ETodo('player._decorate._macos.query')
 
 def get_pid(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.get_pid')
 
 def is_minimized(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.is_minimized')
 
 def minimize(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.minimize')
 
 def restore(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.restore')
 
 def foreground(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.foreground')
 
 def get_rect(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.get_rect')
 
 def get_size(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.get_size')
 
 def click(hwnd, x, y):
-    assert False
+    raise core.ETodo('player._decorate._macos.click')
 
 def drag(hwnd, start, end):
-    assert False
+    raise core.ETodo('player._decorate._macos.drag')
 
 def grab(hwnd):
-    assert False
-
-def grab2(hwnd):
-    assert False
+    raise core.ETodo('player._decorate._macos.grab')

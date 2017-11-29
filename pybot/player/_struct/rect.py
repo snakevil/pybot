@@ -2,6 +2,7 @@
 
 import random
 from .point import Point
+from .epadding import EPadding
 
 class Rect(object):
     def __init__(self, top_left, bottom_right = None):
@@ -54,7 +55,8 @@ class Rect(object):
 
     def random(self, padding = 0):
         padding = int(padding)
-        assert 0 <= padding and 2 * padding <= min(self.width, self.height)
+        if 1 > padding or 2 * padding > min(self.width, self.height):
+            raise EPadding(padding)
         return Point(
             random.randint(self.left + padding, self.right - padding),
             random.randint(self.top + padding, self.bottom - padding)
