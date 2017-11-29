@@ -14,12 +14,15 @@ class Reflex(object):
             raise core.EType(react, React)
         if not isinstance(timeout, float) \
                 and not isinstance(timeout, int) \
-                or 0 >= timeout:
+                or 0 > timeout:
             raise ETimeout(timeout)
         self._expect = expect
         self._react = react
         self._timeout = timeout
         self._title = '*%s' % title if title else '&%s' % expect
+
+    def __str__(self):
+        return type(self).__name__
 
     def do(self, event):
         if not self._expect.test(event):
