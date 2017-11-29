@@ -11,5 +11,8 @@ class Base(object):
             raise ETimeout(timeout)
         self.timeout = timeout
 
+    def __repr__(self):
+        return '%s()' % type(self).__name__
+
     def do(self, event):
         raise core.ETodo('bot.react.base.do')

@@ -17,6 +17,12 @@ class Wait(React):
         self._xmsecs = max(nmsecs, xmsecs)
         self.timeout = self._xmsecs / 1000
 
+    def __repr__(self):
+        return 'Wait(%r%s)' % (
+            self._nmsecs,
+            '' if self._nmsecs == self._xmsecs else ', %d' % self._xmsecs
+        )
+
     def do(self, event):
         msecs = random.randint(self._nmsecs, self._xmsecs)
         event.idle(msecs)

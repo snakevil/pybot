@@ -22,6 +22,12 @@ class Fire(React):
             raise ESpread(spread)
         self._spread = spread
 
+    def __repr__(self):
+        return 'Fire(%r%s)' % (
+            self._target,
+            '' if not self._spread else ', %d' % self._spread
+        )
+
     def do(self, event):
         if isinstance(self._target, player.Rect):
             if self._spread:

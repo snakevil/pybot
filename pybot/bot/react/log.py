@@ -7,5 +7,8 @@ class Log(React):
         super(Log, self).__init__()
         self._msg = message
 
+    def __repr__(self):
+        return 'Log(%r)' % self._msg
+
     def do(self, event):
         event.log('%s logged %r' % (event.target, self._msg), 1)

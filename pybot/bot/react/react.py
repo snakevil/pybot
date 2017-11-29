@@ -6,12 +6,12 @@ from .thenable import Thenable
 
 class React(Base):
     def __add__(self, other):
-        if not isinstance(other, Base):
-            raise core.EType(other, type(self))
-        return Thenable().then(self).then(other)
+        return self.then(other)
 
     def __radd__(self, other):
         raise core.EType(other, type(self))
 
     def then(self, next):
-        return self + other
+        if not isinstance(next, Base):
+            raise core.EType(next, type(self))
+        return Thenable().then(self).then(next)
