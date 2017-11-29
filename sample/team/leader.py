@@ -5,10 +5,11 @@ from .frame import *
 
 class Leader(bot.Competence):
     def __init__(self, total):
-        assert total in range(1, 4)
         if 2 == total:
+            self._total = '双'
             ready = Ready()
         else:
+            self._total = '仨'
             ready = Ready3()
         super(Leader, self).__init__([
             bot.Reflex(
@@ -24,3 +25,6 @@ class Leader(bot.Competence):
                 bot.react.OK()
             )
         ])
+
+    def __str__(self):
+        return '%s人队伍组织能力' % self._total

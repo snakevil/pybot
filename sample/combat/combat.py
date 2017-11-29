@@ -33,3 +33,6 @@ class Combat(bot.Competence):
                 )
             )
         ])
+
+    def __str__(self):
+        return '战斗场景处理能力'

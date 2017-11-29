@@ -19,3 +19,6 @@ class Member(bot.Competence):
                 bot.react.OK()
             )
         ])
+
+    def __str__(self):
+        return '组队邀请处理能力'
