@@ -19,16 +19,16 @@ class Reflex(object):
         self._expect = expect
         self._react = react
         self._timeout = timeout
-        self._title = '*%s' % title if title else '&%s' % expect
+        self._title = title
 
     def __str__(self):
-        return type(self).__name__
+        return self._title or type(self).__name__
 
     def do(self, event):
         if not self._expect.test(event):
             return False
         event['__spots__'] = self._expect.spots
-        event.log('%s %s' % (event.target, self._title), 1)
+        event.log('%s %s' % (event.target, self._expect), 1)
         thread = threading.Thread(
             target = self._react.do,
             args = (event,)
@@ -37,5 +37,5 @@ class Reflex(object):
         thread.start()
         thread.join(self._timeout or self._react.timeout)
         if thread.is_alive():
-            event.log('%s %s timeout' % (event.target, self._title), 2)
+            event.log('%s %s timeout' % (event.target, self._expect), 3)
         return True

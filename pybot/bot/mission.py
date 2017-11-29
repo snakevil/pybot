@@ -33,26 +33,22 @@ class Mission(object):
             raise core.EType(expect, Expect)
         if not isinstance(react, React):
             raise core.EType(react, React)
-        self._reflexes[self._company].append(
-            Reflex(
-                expect,
-                react,
-                title = title
-            )
-        )
+        reflex = Reflex(expect, react, title = title)
+        self._qlog.append(('@%s injected %s' % (self._company, reflex), 1))
+        self._reflexes[self._company].append(reflex)
         return self
 
     def inject(self, reflex):
         if not isinstance(reflex, Reflex):
             raise core.EType(reflex, Reflex)
-        self._qlog.append(('@%s +%s' % (self._company, reflex), 1))
+        self._qlog.append(('@%s injected %s' % (self._company, reflex), 1))
         self._reflexes[self._company].append(Reflex)
         return self
 
     def clone(self, competence):
         if not isinstance(competence, Competence):
             raise core.EType(competence, Competence)
-        self._qlog.append(('@%s +%s' % (self._company, competence), 1))
+        self._qlog.append(('@%s cloned %s' % (self._company, competence), 1))
         self._reflexes[self._company].extend(competence)
         return self
 
@@ -146,6 +142,5 @@ class Mission(object):
                 log = self._log,
                 timeout = timeout
             )
-            for reflex in self._reflexes[company]:
-                self._bots[company].inject(reflex)
+            self._bots[company].inject(*self._reflexes[company])
             self._bots[company].start()

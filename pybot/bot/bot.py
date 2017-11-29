@@ -20,8 +20,8 @@ class Bot(threading.Thread):
         self._['log']('%s cleaning...' % self._player, 1)
         self._exited = True
 
-    def inject(self, reflex):
-        self._reflexes.append(reflex)
+    def inject(self, *reflexes):
+        self._reflexes += reflexes
 
     def enable(self):
         self._enabled.set()
@@ -30,7 +30,7 @@ class Bot(threading.Thread):
         self._enabled.clear()
 
     def run(self):
-        self._['log']('%s injected' % self._player, 2)
+        self._['log']('%s activated' % self._player, 2)
         wrapper = {
             'target': str(self._player),
             'idle': self._player.idle,
@@ -43,33 +43,36 @@ class Bot(threading.Thread):
         while not self._exited:
             self._enabled.wait()
             self._player.idle(self._['tick'])
-            wrapper['screen'] = self._player.snap()
-            now = time.time()
-            if not wrapper['screen']:
-                wrapper['log'](
-                    '%s had no screen input' % (wrapper['target']),
-                    3
-                )
-                continue
-            event = Event(wrapper, self.context)
-            for reflex in self._reflexes:
-                if reflex.do(event):
+            try:
+                wrapper['screen'] = self._player.snap()
+                now = time.time()
+                if not wrapper['screen']:
+                    wrapper['log'](
+                        '%s had no screen input' % (wrapper['target']),
+                        3
+                    )
+                    continue
+                event = Event(wrapper, self.context)
+                for reflex in self._reflexes:
+                    if reflex.do(event):
+                        self._activity = now
+                        break
+                if self._activity + self._['timeout'] < now:
+                    event.log('%s timeout' % event.target, 3)
+                    snappath = '%s-timeout-%d.png' % (
+                        event.target[1:],
+                        int(now)
+                    )
+                    event.screen.save(snappath)
+                    event.log(
+                        '%s screenshot to %r' % (
+                            event.target,
+                            snappath
+                        ),
+                        1
+                    )
                     self._activity = now
-                    break
-            if self._activity + self._['timeout'] < now:
-                event.log('%s timeout' % event.target, 3)
-                snappath = '%s-timeout-%d.png' % (
-                    event.target[1:],
-                    int(now)
-                )
-                event.screen.save(snappath)
-                event.log(
-                    '%s screenshot to %r' % (
-                        event.target,
-                        snappath
-                    ),
-                    1
-                )
-                self._activity = now
-            self.context.update(event)
+                self.context.update(event)
+            except Exception as e:
+                self._['log']('%s %s' % (self._player, e), 3)
         self._['log']('%s clear' % self._player, 2)
