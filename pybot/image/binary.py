@@ -6,11 +6,8 @@ from ._codec import PNG
 class Binary(Base):
     def __init__(self, size, raw, threshold = 0):
         threshold = threshold or self.otsu(raw)
-        length = len(raw)
-        cursor = 0
-        while cursor < length:
+        for cursor in range(0, len(raw), 4):
             raw[cursor] = 0 if raw[cursor] < threshold else 255
-            cursor += 4
         raw[1::4] = raw[0::4]
         raw[2::4] = raw[0::4]
         super(Binary, self).__init__(size, raw)

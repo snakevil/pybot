@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+from .. import core
 from .base import Base
 from .greyscale import Greyscale
 from ._codec import PNG
@@ -17,7 +18,7 @@ class Image(Base):
         with open(filepath, 'rb') as hfile:
             blob = hfile.read()
         if '.png' != ext:
-            assert False
+            raise core.ETodo('image.image.load.jpeg')
         png = PNG.decode(blob)
         return cls((png.width, png.height), png.data)
 

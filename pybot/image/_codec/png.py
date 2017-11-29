@@ -2,6 +2,11 @@
 
 import struct
 import zlib
+from ... import core
+from .edepth import EDepth
+from .echunkmissing import EChunkMissing
+from .echunkduplicated import EChunkDuplicated
+from .echunkbroken import EChunkBroken
 
 ''' http://www.w3.org/TR/PNG
 '''
@@ -19,12 +24,11 @@ class PNG(object):
     def __init__(self, width, height, depth = 8, type = TRUECOLOR):
         self.width = width
         self.height = height
-        if self.GREYSCALE == type:
-            assert depth in [1, 2, 4, 8, 16]
-        elif self.INDEXED == type:
-            assert depth in [1, 2, 4, 8]
-        else:
-            assert depth in [8, 16]
+        if self.GREYSCALE == type and depth not in [1, 2, 4, 8, 16] \
+                or self.INDEXED == type and depth not in [1, 2, 4, 8] \
+                or self.GREYSCALE != type and self.INDEXED != type \
+                    and depth not in [8, 16]:
+            raise EDepth(depth)
         self.depth = depth
         self.type = type
 
@@ -77,7 +81,8 @@ class PNG(object):
         return b''.join(chunk)
 
     def _pack(self, samples, depth):
-        assert 8 == depth
+        if 8 != depth:
+            raise core.ETodo('image._codec.png.multipack')
         size = 1 + (3 & self.type) + (1 if 3 < self.type else 0)
         if self.INDEXED == self.type:
             size = 1
@@ -92,8 +97,10 @@ class PNG(object):
         chunks = cls._decode_chunks(blob)
         ihdr = cls._decode_ihdr(chunks[b'IHDR'])
         self = cls(*ihdr[0:4])
-        assert self.INDEXED != self.type or b'PLTE' in chunks
-        assert not ihdr[-1]
+        if self.INDEXED == self.type and b'PLTE' not in chunks:
+            raise EChunkMissing('PLTE')
+        if ihdr[-1]:
+            raise core.ETodo('image._codec.png.interlace')
         self.data = self._decode_idat(
             bytearray(zlib.decompress(chunks[b'IDAT'])),
             self._decode_plte(chunks.get(b'PLTE'), chunks.get(b'tRNS')),
@@ -119,13 +126,20 @@ class PNG(object):
             i += 4
             if id not in ids:
                 continue
-            assert mask & zlib.crc32(id + data) == crc32
+            if mask & zlib.crc32(id + data) != crc32:
+                raise EChunkBroken(id.decode('utf-8'))
             if b'IDAT' == id and id in chunks:
                 chunks[id] += data
+            elif id in chunks:
+                raise EChunkDuplicated(id.decode('utf-8'))
             else:
-                assert id not in chunks
                 chunks[id] = data
-        assert b'IHDR' in chunks and b'IDAT' in chunks and b'IEND' in chunks
+        if b'IHDR' not in chunks:
+            raise EChunkMissing('IHDR')
+        if b'IDAT' not in chunks:
+            raise EChunkMissing('IDAT')
+        if b'IEND' not in chunks:
+            raise EChunkMissing('IEND')
         return chunks
 
     @staticmethod

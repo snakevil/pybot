@@ -2,8 +2,11 @@
 
 import struct
 import zlib
+from .. import core
 from ._struct import Pixel
 from ._codec import PNG
+from ._codec.edepth import EDepth
+from .ecoordinate import ECoordinate
 
 class Base(object):
     def __init__(self, size, raw):
@@ -16,8 +19,8 @@ class Base(object):
         self.rgba = raw
 
     def pixel(self, x, y):
-        assert 0 <= x and x < self.width
-        assert 0 <= y and y < self.height
+        if 1 > x or x >= self.width or 1 > y or y >= self.height:
+            raise ECoordinate(x, y)
         pos = (self.width * y + x) * 4
         return Pixel(
             (x, y),
@@ -32,7 +35,7 @@ class Base(object):
             ext = '.png'
             filepath += ext
         if '.png' != ext:
-            assert False
+            raise core.ETodo('image.base.save.jpeg')
         with open(filepath, 'wb') as hfile:
             hfile.write(self._png())
 
@@ -45,12 +48,12 @@ class Base(object):
         right = max(top_left[0], bottom_right[0])
         bottom = max(top_left[1], bottom_right[1])
         left = min(top_left[0], bottom_right[0])
-        assert 0 <= left and left < self.width
-        assert 0 <= top and top < self.height
-        width = right - left
-        height = bottom - top
-        assert 0 < width and width <= self.width
-        assert 0 < height and height <= self.height
+        if 1 > left or left >= self.width or 1 > top or top >= self.height:
+            raise ECoordinate(left, top)
+        if 1 > right or right >= self.width or 1 > bottom or bottom >= self.height:
+            raise ECoordinate(right, bottom)
+        width = max(1, right - left)
+        height = max(1, bottom - top)
         line = 4 * width
         raw = bytearray(line * height)
         for y in range(height):
@@ -61,8 +64,8 @@ class Base(object):
     def resize(self, width, height):
         ''' http://blog.csdn.net/liyuan02/article/details/6765442
         '''
-        assert 0 < width
-        assert 0 < height
+        width = max(1, width)
+        height = max(1, height)
         line = 4 * width
         raw = bytearray(line * height)
         ratio_x = (self.width << 16) / width
@@ -81,7 +84,8 @@ class Base(object):
     def histogram(self, depth = 2):
         ''' http://www.ruanyifeng.com/blog/2013/03/similar_image_search_part_ii.html
         '''
-        assert isinstance(depth, int) and 0 < depth and depth < 9
+        if not isinstance(depth, int) or depth not in [1, 2, 4, 8]:
+            raise EDepth(depth)
         values = range(1 << depth)
         depth = 8 - depth
         space = [

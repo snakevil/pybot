@@ -3,27 +3,23 @@
 from .base import Base
 from .binary import Binary
 from ._codec import PNG
+from ._codec.edepth import EDepth
 
 class Greyscale(Base):
     def __init__(self, size, raw, depth = 8):
         ''' http://blog.csdn.net/u013467442/article/details/47616661
         '''
-        assert isinstance(depth, int) and 0 < depth and depth < 9
+        if not isinstance(depth, int) or depth not in [1, 2, 4, 8]:
+            raise EDepth(depth)
+        bits = 8 - depth
+        for cursor in range(0, len(raw), 4):
+            raw[cursor] = (
+                raw[cursor] + (raw[cursor + 1] << 1) + raw[cursor + 2]
+            ) >> 2 + bits << bits
+        raw[1::4] = raw[0::4]
+        raw[2::4] = raw[0::4]
         super(Greyscale, self).__init__(size, raw)
         self.depth = depth
-        length = self.width * self.height
-        gray = bytearray(length)
-        depth = 8 - depth
-        cursor = 0
-        while cursor < length:
-            pos = cursor << 2
-            gray[cursor] = (
-                raw[pos] + (raw[pos + 1] << 1) + raw[pos + 2]
-            ) >> 2 + depth << depth
-            cursor += 1
-        self.rgba[0::4] = gray[:]
-        self.rgba[1::4] = gray[:]
-        self.rgba[2::4] = gray[:]
         self._threshold = 0
 
     def _png(self):
@@ -38,9 +34,3 @@ class Greyscale(Base):
 
     def binary(self, threshold = 0):
         return Binary(self, self.rgba, threshold or self.threshold)
-        for pixel in self.rgba[0::4]:
-            if pixel > gray:
-                raw += [255, 255, 255, 0]
-            else:
-                raw += [0, 0, 0, 0]
-        return type(self)(self, bytearray(raw))
