@@ -11,17 +11,23 @@ class Base(object):
     def __repr__(self):
         return '%s()' % type(self).__name__
 
-    def __and__(self, another):
+    def __eq__(self, other):
+        return self.__hash__() == hash(other)
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
+    def __and__(self, other):
         raise core.ETodo('bot.expect.base.__and__')
 
-    def __iand__(self, another):
-        return self.__and__(another)
+    def __iand__(self, other):
+        return self.__and__(other)
 
-    def __or__(self, another):
+    def __or__(self, other):
         raise core.ETodo('bot.expect.base.__or__')
 
-    def __ior__(self, another):
-        return self.__or__(another)
+    def __ior__(self, other):
+        return self.__or__(other)
 
     def spot(self, id, point, spread = 0):
         if isinstance(point, tuple):
