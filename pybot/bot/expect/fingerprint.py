@@ -1,16 +1,22 @@
 # encoding: utf-8
 
-from ...player import Rect
+from ... import player
 from .expect import Expect
+from .efingerprint import EFingerprint
+from .egray import EGray
+from .ethreshold import EThreshold
 
 class Fingerprint(Expect):
     def __init__(self, region, digest, gray, threshold = 10, **spots):
-        assert isinstance(digest, str)
-        assert isinstance(gray, int) and 0 <= gray and gray < 255
-        assert isinstance(threshold, int) and 0 <= threshold
+        if not isinstance(digest, str) or 16 != len(digest):
+            raise EFingerprint(digest)
+        if not isinstance(gray, int) or 1 > gray or gray > 254:
+            raise EGray(gray)
+        if not isinstance(threshold, int) or 0 > threshold:
+            raise EThreshold(threshold)
         super(Fingerprint, self).__init__(**spots)
-        self._region = region if isinstance(region, Rect) \
-            else Rect(*region)
+        self._region = region if isinstance(region, player.Rect) \
+            else player.Rect(*region)
         self._digest = digest
         self._threshold = threshold
         self._gray = gray

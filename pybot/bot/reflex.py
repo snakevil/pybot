@@ -1,16 +1,21 @@
 # encoding: utf-8
 
 import threading
+from .. import core
 from .expect import Base as Expect
 from .react import Base as React
+from .react.etimeout import ETimeout
 
 class Reflex(object):
     def __init__(self, expect, react, timeout = 0, title = ''):
-        assert isinstance(expect, Expect)
-        assert isinstance(react, React)
-        assert (
-            isinstance(timeout, float) or isinstance(timeout, int)
-        ) and 0 <= timeout
+        if not isinstance(expect, Expect):
+            raise core.EType(expect, Expect)
+        if not isinstance(react, React):
+            raise core.EType(react, React)
+        if not isinstance(timeout, float) \
+                and not isinstance(timeout, int) \
+                or 0 >= timeout:
+            raise ETimeout(timeout)
         self._expect = expect
         self._react = react
         self._timeout = timeout

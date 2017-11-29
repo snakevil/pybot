@@ -1,15 +1,19 @@
 # encoding: utf-8
 
-from ...player import Rect
+from ... import player
 from .expect import Expect
+from .ehistogram import EHistogram
+from .ethreshold import EThreshold
 
 class Colors(Expect):
     def __init__(self, region, histogram, threshold = 10, **spots):
-        assert isinstance(histogram, tuple) and 8 == len(histogram)
-        assert isinstance(threshold, int) and 0 <= threshold
+        if not isinstance(histogram, tuple) or 8 != len(histogram):
+            raise EHistogram(histogram)
+        if not isinstance(threshold, int) or 0 > threshold:
+            raise EThreshold(threshold)
         super(Colors, self).__init__(**spots)
-        self._region = region if isinstance(region, Rect) \
-            else Rect(*region)
+        self._region = region if isinstance(region, player.Rect) \
+            else player.Rect(*region)
         self._histogram = histogram
         self._threshold = threshold
 

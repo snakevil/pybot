@@ -1,12 +1,13 @@
 # encoding: utf-8
 
 import signal
-from ..player import get_euid, su, Window as Player
+from .. import core, player
 from .expect import Base as Expect
 from .react import Base as React
 from .reflex import Reflex
 from .competence import Competence
 from .bot import Bot
+from .ecompany import ECompany
 
 class Mission(object):
     def __init__(self, *companies):
@@ -18,7 +19,8 @@ class Mission(object):
         self._bots = {}
 
     def company(self, company = ''):
-        assert company in self._companies
+        if company not in self._companies:
+            raise ECompany(company, self._companies)
         self._co = company
         return self
 
@@ -26,8 +28,10 @@ class Mission(object):
         return self.company(company)
 
     def on(self, expect, react, title = ''):
-        assert isinstance(expect, Expect)
-        assert isinstance(react, React)
+        if not isinstance(expect, Expect):
+            raise core.EType(expect, Expect)
+        if not isinstance(react, React):
+            raise core.EType(react, React)
         self._reflexes[self._co].append(
             Reflex(
                 expect,
@@ -38,12 +42,14 @@ class Mission(object):
         return self
 
     def inject(self, reflex):
-        assert isinstance(reflex, Reflex)
+        if not isinstance(reflex, Reflex):
+            raise core.EType(reflex, Reflex)
         self._reflexes[self._co].append(Reflex)
         return self
 
     def clone(self, competence):
-        assert isinstance(competence, Competence)
+        if not isinstance(competence, Competence):
+            raise core.EType(competence, Competence)
         self._reflexes[self._co].extend(competence)
         return self
 
@@ -67,9 +73,6 @@ class Mission(object):
             self._bots[company].stop()
 
     def exec(self, players, **context):
-        if get_euid():
-            su()
-
         self._log = context.get('log')
         if self._log:
             del context['log']
@@ -108,12 +111,13 @@ class Mission(object):
         signal.signal(signal.SIGTERM, self.halt)
 
 
-        if isinstance(players, Player):
+        if isinstance(players, player.Window):
             players = {'': players}
         tick = 1000 / fps
         self._bots = {}
         for company in self._companies:
-            assert isinstance(players.get(company), Player)
+            if not isinstance(players.get(company), player.Window):
+                raise core.EType(players.get(company), player.Window)
             players[company].aka(company or 'Adam')
             self._bots[company] = Bot(
                 players[company],

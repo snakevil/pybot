@@ -1,7 +1,8 @@
 # encoding: utf-8
 
-from ...player import Point, Rect
+from ... import player
 from .react import React
+from .espread import ESpread
 
 class Spot(React):
     def __init__(self, id):
@@ -14,8 +15,10 @@ class Spot(React):
     def do(self, event):
         spot = event['__spots__'].get(self._id)
         if spot:
+            if not isinstance(spot[1], int) or 0 > spot[1]:
+                raise ESpread(spot[1])
             event.log('!%r represented as Fire%r' % (self, spot), 0)
-            if isinstance(spot[0], Rect):
+            if isinstance(spot[0], player.Rect):
                 if spot[1]:
                     point = spot[0].random(spot[1])
                 else:

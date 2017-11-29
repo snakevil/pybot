@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+from ... import core
 from .base import Base
 
 class Thenable(Base):
@@ -12,7 +13,8 @@ class Thenable(Base):
             react.do(event)
 
     def then(self, react):
-        assert isinstance(react, Base)
+        if not isinstance(react, Base):
+            raise core.EType(react, Base)
         self._reacts.append(react)
         self.timeout += react.timeout
         return self
