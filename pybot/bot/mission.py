@@ -52,7 +52,7 @@ class Mission(object):
     def clone(self, competence):
         if not isinstance(competence, Competence):
             raise core.EType(competence, Competence)
-        self._qlog.append(('@%s *%s' % (self._company, competence), 1))
+        self._qlog.append(('@%s +%s' % (self._company, competence), 1))
         self._reflexes[self._company].extend(competence)
         return self
 
@@ -124,10 +124,6 @@ class Mission(object):
             timeout = 60
         self._log('Timeout: %d' % timeout, 2)
 
-        async = context.get('async')
-        if async:
-            del context['async']
-
         signal.signal(signal.SIGINT, self.halt)
         signal.signal(signal.SIGTERM, self.halt)
 
@@ -153,8 +149,3 @@ class Mission(object):
             for reflex in self._reflexes[company]:
                 self._bots[company].inject(reflex)
             self._bots[company].start()
-        self._log('started', 255)
-
-        if not async:
-            self.await(tick)
-            self._log('completed :)', 255)
