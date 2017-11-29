@@ -9,3 +9,4 @@ from .fire import Fire
 from .spot import Spot
 from .ok import OK
 from .cancel import Cancel
+from .cast import Cast
