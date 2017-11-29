@@ -12,16 +12,17 @@ from .ecompany import ECompany
 class Mission(object):
     def __init__(self, *companies):
         self._companies = companies or ['']
-        self._co = self._companies[0]
+        self._company = self._companies[0]
         self._reflexes = {company: [] for company in self._companies}
         self._log = self._logger
+        self._qlog = []
         self._level = 1
         self._bots = {}
 
     def company(self, company = ''):
         if company not in self._companies:
             raise ECompany(company, self._companies)
-        self._co = company
+        self._company = company
         return self
 
     def co(self, company = ''):
@@ -32,7 +33,7 @@ class Mission(object):
             raise core.EType(expect, Expect)
         if not isinstance(react, React):
             raise core.EType(react, React)
-        self._reflexes[self._co].append(
+        self._reflexes[self._company].append(
             Reflex(
                 expect,
                 react,
@@ -44,13 +45,15 @@ class Mission(object):
     def inject(self, reflex):
         if not isinstance(reflex, Reflex):
             raise core.EType(reflex, Reflex)
-        self._reflexes[self._co].append(Reflex)
+        self._qlog.append(('@%s +%s' % (self._company, reflex), 1))
+        self._reflexes[self._company].append(Reflex)
         return self
 
     def clone(self, competence):
         if not isinstance(competence, Competence):
             raise core.EType(competence, Competence)
-        self._reflexes[self._co].extend(competence)
+        self._qlog.append(('@%s *%s' % (self._company, competence), 1))
+        self._reflexes[self._company].extend(competence)
         return self
 
     def _logger(self, message, level = 0):
@@ -71,6 +74,15 @@ class Mission(object):
         self._log('aborting for %s received...' % sigid, 0)
         for company in self._companies:
             self._bots[company].stop()
+
+    @property
+    def running(self):
+        if not self._bots:
+            return False
+        running = True
+        for company in self._companies:
+            running = running and self._bots[company].is_alive()
+        return running
 
     def exec(self, players, **context):
         self._log = context.get('log')
@@ -107,9 +119,16 @@ class Mission(object):
             timeout = 60
         self._log('Timeout: %d' % timeout, 2)
 
+        async = context.get('async')
+        if async:
+            del context['async']
+
         signal.signal(signal.SIGINT, self.halt)
         signal.signal(signal.SIGTERM, self.halt)
 
+        for log in self._qlog:
+            self._log(*log)
+        self._qlog = []
 
         if isinstance(players, player.Window):
             players = {'': players}
@@ -131,13 +150,10 @@ class Mission(object):
             self._bots[company].start()
         self._log('started', 255)
 
-        tick /= 1000
-        while True:
-            running = True
-            for company in self._companies:
-                running = running and self._bots[company].is_alive()
-            if running:
+        if not async:
+            tick /= 1000
+            while True:
+                if not self.running:
+                    break
                 self._bots[self._companies[0]].join(tick)
-            else:
-                break
-        self._log('completed :)', 255)
+            self._log('completed :)', 255)
