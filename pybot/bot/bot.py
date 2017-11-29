@@ -72,4 +72,4 @@ class Bot(threading.Thread):
                 )
                 self._activity = now
             self.context.update(event)
-        self._['log']('%s reset' % self._player, 2)
+        self._['log']('%s clear' % self._player, 2)

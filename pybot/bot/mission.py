@@ -71,7 +71,7 @@ class Mission(object):
         sigid = 'SIGINT' if 2 == signum \
             else 'SIGTERM' if 15 == signum \
             else signum
-        self._log('aborting for %s received...' % sigid, 0)
+        self._log('aborting for %s...' % sigid, 0)
         for company in self._companies:
             self._bots[company].stop()
 
@@ -83,6 +83,11 @@ class Mission(object):
         for company in self._companies:
             running = running and self._bots[company].is_alive()
         return running
+
+    def await(self, tick = 1000):
+        tick /= 1000
+        while self.running:
+            self._bots[self._companies[0]].join(tick)
 
     def exec(self, players, **context):
         self._log = context.get('log')
@@ -151,9 +156,5 @@ class Mission(object):
         self._log('started', 255)
 
         if not async:
-            tick /= 1000
-            while True:
-                if not self.running:
-                    break
-                self._bots[self._companies[0]].join(tick)
+            self.await(tick)
             self._log('completed :)', 255)
