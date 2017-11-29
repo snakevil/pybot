@@ -21,8 +21,31 @@ class Reflex(object):
         self._timeout = timeout
         self._title = title
 
+    def __repr__(self):
+        return 'Reflex(%r, %r%s)' % (
+            self._expect,
+            self._react,
+            '' if not self._timeout else ', %d' % self._timeout
+        )
+
     def __str__(self):
         return self._title or type(self).__name__
+
+    def __iadd__(self, other):
+        if isinstance(other, React):
+            self._react += other
+        elif isinstance(other, type(self)) and self._expect == other._expect:
+            self._react += other._react
+        else:
+            raise core.EType(other, React)
+
+    @property
+    def expect(self):
+        return self._expect
+
+    def then(self, react):
+        self += react
+        return self
 
     def do(self, event):
         if not self._expect.test(event):

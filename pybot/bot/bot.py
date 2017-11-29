@@ -13,7 +13,7 @@ class Bot(threading.Thread):
         self._enabled = threading.Event()
         self._exited = False
         self._activity = time.time()
-        self._reflexes = []
+        self._reflexes = {}
         self.enable()
 
     def stop(self):
@@ -21,7 +21,12 @@ class Bot(threading.Thread):
         self._exited = True
 
     def inject(self, *reflexes):
-        self._reflexes += reflexes
+        for reflex in reflexes:
+            exist = self._reflexes.get(reflex.expect)
+            if exist:
+                exist += reflex
+            else:
+                self._reflexes[reflex.expect] = reflex
 
     def enable(self):
         self._enabled.set()
@@ -40,6 +45,7 @@ class Bot(threading.Thread):
             'disable': self.disable,
             'log': self._['log']
         }
+        reflexes = self._reflexes.values()
         while not self._exited:
             self._enabled.wait()
             self._player.idle(self._['tick'])
@@ -53,7 +59,7 @@ class Bot(threading.Thread):
                     )
                     continue
                 event = Event(wrapper, self.context)
-                for reflex in self._reflexes:
+                for reflex in reflexes:
                     if reflex.do(event):
                         self._activity = now
                         break
