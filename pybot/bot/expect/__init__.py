@@ -1,5 +1,12 @@
 # encoding: utf-8
 
+__all__ = [
+    'Base', 'Expect',
+    'All', 'Any',
+    'Negative',
+    'Pixels', 'Colors', 'Fingerprint'
+]
+
 from .base import Base
 from .expect import Expect
 from .all import All
