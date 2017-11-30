@@ -38,6 +38,7 @@ class Reflex(object):
             self._react += other._react
         else:
             raise core.EType(other, React)
+        return self
 
     @property
     def expect(self):

@@ -27,7 +27,7 @@ class Thenable(Base):
         raise core.EType(other, type(self))
 
     def __iadd__(self, other):
-        self.then(other)
+        return self.then(other)
 
     def do(self, event):
         for react in self._reacts:
