@@ -93,9 +93,11 @@ class License(object):
             blen,
             bundle
         )
+        sign = rsa.sign(payload, rsa.PrivateKey.load_pkcs1(cipher), 'MD5')
         return b''.join([
             payload,
-            rsa.sign(payload, rsa.PrivateKey.load_pkcs1(cipher), 'MD5')
+            struct.pack('>H', len(sign)),
+            sign
         ])
 
     @classmethod
