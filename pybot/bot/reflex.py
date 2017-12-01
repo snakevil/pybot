@@ -34,7 +34,7 @@ class Reflex(object):
     def __iadd__(self, other):
         if isinstance(other, React):
             self._react += other
-        elif isinstance(other, type(self)) and self._expect == other._expect:
+        elif isinstance(other, Reflex) and self._expect == other._expect:
             self._react += other._react
         else:
             raise core.EType(other, React)

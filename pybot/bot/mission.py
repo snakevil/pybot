@@ -42,7 +42,7 @@ class Mission(object):
         if not isinstance(reflex, Reflex):
             raise core.EType(reflex, Reflex)
         self._qlog.append(('@%s injected %s' % (self._company, reflex), 1))
-        self._reflexes[self._company].append(Reflex)
+        self._reflexes[self._company].append(reflex)
         return self
 
     def clone(self, competence):
