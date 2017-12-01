@@ -23,15 +23,13 @@ class License(object):
     @classmethod
     def load(cls, blob, cipher):
         lic = cls()
-        try:
-            blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
-            if 1 == blob[0]:
-                version, lic._hwaddr, lic._born, lic._deadline, \
-                lic._version, bundle = struct.unpack(
-                    '>B6s2IB%ds' % (len(blob) - 16), blob
-                )
-                lic._bundle = bundle.decode('utf-8')
-        except: pass
+        blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
+        if 1 == blob[0]:
+            version, lic._hwaddr, lic._born, lic._deadline, \
+            lic._version, bundle = struct.unpack(
+                '>B6s2IB%ds' % (len(blob) - 16), blob
+            )
+            lic._bundle = bundle.decode('utf-8')
         return lic
 
     def save(self, cipher):
@@ -79,16 +77,25 @@ class License(object):
         return lic
 
     @classmethod
-    def payload(cls, app):
+    def payload(cls, app, cipher):
         if not isinstance(app, App):
             raise core.EType(app, App)
         appcls = type(app)
         bundle = '.'.join([appcls.__module__, appcls.__name__]).encode('utf-8')
+        blen = len(bundle)
         macs = cls._mac()
+        mlen = len(macs)
+        payload = struct.pack(
+            '>B%ds2B%ds' % (6 * mlen, blen),
+            mlen,
+            b''.join(macs),
+            app.version()[0],
+            blen,
+            bundle
+        )
         return b''.join([
-            struct.pack('>2B', len(macs), app.version()[0]),
-            bundle,
-            *macs
+            payload,
+            rsa.sign(payload, rsa.PrivateKey.load_pkcs1(cipher), 'MD5')
         ])
 
     @classmethod
