@@ -17,6 +17,10 @@ class App(object):
     def _on_close(self):
         self.gui.quit()
 
+    @staticmethod
+    def version():
+        return (1, 0, 0)
+
     def run(self):
         self.gui.mainloop()
 
