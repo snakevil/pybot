@@ -1,14 +1,9 @@
 # encoding: utf-8
 
 import platform
-system = platform.system()
-if 'Windows' == system:
-    from ._decorate import _win32 as _decorate
-elif 'Darwin' == system:
-    from ._decorate import _macos as _decorate
-else:
-    from ._decorate import _linux as _decorate
 import time
+
+from . import _decorate
 from ..image import Screenshot
 from ._struct import Rect
 
