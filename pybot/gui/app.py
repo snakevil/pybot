@@ -18,9 +18,13 @@ class App(object):
     def _on_close(self):
         self.gui.quit()
 
+    @classmethod
+    def bundle(cls):
+        return '.'.join([cls.__module__, cls.__name__])
+
     @staticmethod
     def version():
-        return (1, 0, 0)
+        return (1, 0, 0, 0)
 
     def run(self):
         self.gui.mainloop()

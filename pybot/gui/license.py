@@ -26,21 +26,24 @@ class License(object):
     @classmethod
     def load(cls, blob, cipher):
         lic = cls()
-        blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
-        if 1 == blob[0]:
-            offset = 17
-            version, lic._hwaddr, lic._born, lic._deadline, \
-            lic._version, size = struct.unpack('>B6s2I2B', blob[0:offset])
-            lic._bundle = blob[offset:offset + size].decode('utf-8')
-            offset += size
-            size = blob[offset]
-            lic.user = blob[offset:offset + size].decode('utf-8')
-            offset += size
-            size = blob[offset]
-            lic.organization = blob[offset:offset + size].decode('utf-8')
-            offset += size
-            size = blob[offset]
-            lic.email = blob[offset:offset + size].decode('utf-8')
+        try:
+            blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
+            if 1 == blob[0]:
+                offset = 17
+                version, lic._hwaddr, lic._born, lic._deadline, \
+                lic._version, size = struct.unpack('>B6s2I2B', blob[0:offset])
+                lic._bundle = blob[offset:offset + size].decode('utf-8')
+                offset += size
+                size = blob[offset]
+                lic.user = blob[offset:offset + size].decode('utf-8')
+                offset += size
+                size = blob[offset]
+                lic.organization = blob[offset:offset + size].decode('utf-8')
+                offset += size
+                size = blob[offset]
+                lic.email = blob[offset:offset + size].decode('utf-8')
+        except:
+            pass
         return lic
 
     def save(self, cipher):
@@ -78,7 +81,7 @@ class License(object):
         if self._deadline and time.time() > self._deadline:
             return False
         appcls = type(app)
-        if '.'.join([appcls.__module__, appcls.__name__]) != self._bundle:
+        if app.bundle() != self._bundle:
             return False
         if self._version and self._version != app.version()[0]:
             return False
@@ -117,7 +120,7 @@ class License(object):
         if not isinstance(app, App):
             raise core.EType(app, App)
         appcls = type(app)
-        bundle = '.'.join([appcls.__module__, appcls.__name__]).encode('utf-8')
+        bundle = app.bundle().encode('utf-8')
         blen = len(bundle)
         macs = cls._mac()
         mlen = len(macs)
