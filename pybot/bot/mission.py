@@ -66,8 +66,9 @@ class Mission(object):
     def halt(self, signum, frame):
         sigid = 'SIGINT' if 2 == signum \
             else 'SIGTERM' if 15 == signum \
-            else signum
-        self._log('aborting for %s...' % sigid, 0)
+            else ''
+        if sigid:
+            self._log('aborting for %s...' % sigid, 0)
         for company in self._companies:
             self._bots[company].stop()
 

@@ -51,6 +51,7 @@ class Reflex(object):
     def do(self, event):
         if not self._expect.test(event):
             return False
+        event['title'] = str(self._expect)
         event['__spots__'] = self._expect.spots
         event.log('%s %s' % (event.target, self._expect), 1)
         thread = threading.Thread(
