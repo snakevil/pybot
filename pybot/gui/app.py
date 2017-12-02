@@ -13,6 +13,7 @@ class App(object):
         self.on_close(self._on_close)
         self.prefix = sys.prefix if hasattr(sys, 'frozen') \
             else path.dirname(path.realpath(sys.argv[0]))
+        self.debug = path.exists('/'.join([self.prefix, '__debug__.txt']))
 
     def _on_close(self):
         self.gui.quit()
