@@ -19,30 +19,55 @@ class License(object):
         self._hwaddr = b'\xfe\xdc\xba\x98\x76\x54'
         self._born = int(time.time())
         self._deadline = self._born - 1
+        self.user = ''
+        self.organization = ''
+        self.email = ''
 
     @classmethod
     def load(cls, blob, cipher):
         lic = cls()
         blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
         if 1 == blob[0]:
+            offset = 17
             version, lic._hwaddr, lic._born, lic._deadline, \
-            lic._version, bundle = struct.unpack(
-                '>B6s2IB%ds' % (len(blob) - 16), blob
-            )
-            lic._bundle = bundle.decode('utf-8')
+            lic._version, size = struct.unpack('>B6s2I2B', blob[0:offset])
+            lic._bundle = blob[offset:offset + size].decode('utf-8')
+            offset += size
+            size = blob[offset]
+            lic.user = blob[offset:offset + size].decode('utf-8')
+            offset += size
+            size = blob[offset]
+            lic.organization = blob[offset:offset + size].decode('utf-8')
+            offset += size
+            size = blob[offset]
+            lic.email = blob[offset:offset + size].decode('utf-8')
         return lic
 
     def save(self, cipher):
         bundle = self._bundle.encode('utf-8')
+        blen = len(bundle)
+        user = self.user.encode('utf-8')
+        ulen = len(user)
+        organization = self.organization.encode('utf-8')
+        olen = len(organization)
+        email = self.email.encode('utf-8')
+        elen = len(email)
         return rsa.encrypt(
             struct.pack(
-                '>B6s2IB%ds' % len(bundle),
+                '>B6s2I2B%dsB%dsB%dsB%ds' % (blen, ulen, olen, elen),
                 1,
                 self._hwaddr,
                 self._born,
                 self._deadline,
                 self._version,
-                bundle
+                blen,
+                bundle,
+                ulen,
+                user,
+                olen,
+                organization,
+                elen,
+                email
             ),
             rsa.PublicKey.load_pkcs1(cipher)
         )
@@ -63,17 +88,28 @@ class License(object):
         return True
 
     @classmethod
-    def new(cls, app, hwaddr = None, days = 0, version = True):
-        if not isinstance(app, App):
-            raise core.EType(app, App)
+    def new(cls, bundle, **kwargs):
+        props = {
+            'hwaddr': None,
+            'days': 0,
+            'version': 0,
+            'user': '',
+            'organization': '',
+            'email': ''
+        }
+        props.update(kwargs)
         lic = cls()
-        appcls = type(app)
-        lic._bundle = '.'.join([appcls.__module__, appcls.__name__])
-        lic._version = app.version()[0] if version else 0
-        lic._hwaddr = hwaddr if isinstance(hwaddr, bytes) and 6 == len(hwaddr) \
-            else lic._mac()[0]
-        lic._deadline = 0 if 1 > days \
-            else lic._born + 86400 * int(days)
+        lic._bundle = bundle
+        lic._version = props['version']
+        if isinstance(props['hwaddr'], bytes) and 6 == len(props['hwaddr']):
+            lic._hwaddr = props['hwaddr']
+        else:
+            lic._hwaddr = lic._mac()[0]
+        lic._deadline = 0 if 1 > props['days'] \
+            else lic._born + 86400 * int(props['days'])
+        lic.user = props['user']
+        lic.organization = props['organization']
+        lic.email = props['email']
         return lic
 
     @classmethod
