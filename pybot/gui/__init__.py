@@ -2,8 +2,10 @@
 
 __all__ = [
     'App',
+    'Modal',
     'License'
 ]
 
 from .app import App
+from .modal import Modal
 from .license import License

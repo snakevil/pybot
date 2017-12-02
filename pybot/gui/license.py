@@ -16,9 +16,9 @@ class License(object):
     def __init__(self):
         self._bundle = ''
         self._version = 255
-        self._hwaddr = b'\xfe\xdc\xba\x98\x76\x54'
-        self._born = int(time.time())
-        self._deadline = self._born - 1
+        self.hwaddr = b'\xfe\xdc\xba\x98\x76\x54'
+        self.born = int(time.time())
+        self.deadline = self.born - 1
         self.user = ''
         self.organization = ''
         self.email = ''
@@ -26,21 +26,24 @@ class License(object):
     @classmethod
     def load(cls, blob, cipher):
         lic = cls()
+        blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
         try:
-            blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
             if 1 == blob[0]:
                 offset = 17
-                version, lic._hwaddr, lic._born, lic._deadline, \
+                version, lic.hwaddr, lic.born, lic.deadline, \
                 lic._version, size = struct.unpack('>B6s2I2B', blob[0:offset])
                 lic._bundle = blob[offset:offset + size].decode('utf-8')
                 offset += size
                 size = blob[offset]
+                offset += 1
                 lic.user = blob[offset:offset + size].decode('utf-8')
                 offset += size
                 size = blob[offset]
+                offset += 1
                 lic.organization = blob[offset:offset + size].decode('utf-8')
                 offset += size
                 size = blob[offset]
+                offset += 1
                 lic.email = blob[offset:offset + size].decode('utf-8')
         except:
             pass
@@ -59,9 +62,9 @@ class License(object):
             struct.pack(
                 '>B6s2I2B%dsB%dsB%dsB%ds' % (blen, ulen, olen, elen),
                 1,
-                self._hwaddr,
-                self._born,
-                self._deadline,
+                self.hwaddr,
+                self.born,
+                self.deadline,
                 self._version,
                 blen,
                 bundle,
@@ -78,15 +81,15 @@ class License(object):
     def verify(self, app):
         if not isinstance(app, App):
             return False
-        if self._deadline and time.time() > self._deadline:
+        if self.deadline and time.time() > self.deadline:
             return False
         appcls = type(app)
         if app.bundle() != self._bundle:
             return False
         if self._version and self._version != app.version()[0]:
             return False
-        if b'\x00\x00\x00\x00\x00\x00' != self._hwaddr \
-                and self._hwaddr not in self._mac():
+        if b'\x00\x00\x00\x00\x00\x00' != self.hwaddr \
+                and self.hwaddr not in self._mac():
             return False
         return True
 
@@ -105,11 +108,11 @@ class License(object):
         lic._bundle = bundle
         lic._version = props['version']
         if isinstance(props['hwaddr'], bytes) and 6 == len(props['hwaddr']):
-            lic._hwaddr = props['hwaddr']
+            lic.hwaddr = props['hwaddr']
         else:
-            lic._hwaddr = lic._mac()[0]
-        lic._deadline = 0 if 1 > props['days'] \
-            else lic._born + 86400 * int(props['days'])
+            lic.hwaddr = lic._mac()[0]
+        lic.deadline = 0 if 1 > props['days'] \
+            else lic.born + 86400 * int(props['days'])
         lic.user = props['user']
         lic.organization = props['organization']
         lic.email = props['email']
