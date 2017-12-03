@@ -7,9 +7,9 @@ from .. import core
 __all__ = ['ELicenseExpired']
 
 class ELicenseExpired(core.Error):
-    def __init__(self):
-        super(ELicenseExpired, self, time).__init__(
+    def __init__(self, time):
+        super(ELicenseExpired, self).__init__(
             0x4002,
-            'Expired due %s.' % t.strftime('%c', time),
+            'LICENSE Expired due %s.' % t.strftime('%c', time),
             time = time
         )

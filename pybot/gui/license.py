@@ -10,6 +10,9 @@ import rsa
 from .. import core
 from .app import App
 from .elicenseapp import ELicenseApp
+from .elicenseexpired import ELicenseExpired
+from .elicenseupgraded import ELicenseUpgraded
+from .elicensehardware import ELicenseHardware
 
 __all__ = ['License']
 
