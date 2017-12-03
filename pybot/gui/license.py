@@ -175,8 +175,15 @@ class License(object):
                 if b'\x00\x00\x00\x00\x00\x00' == mac:
                     mac = b''
                 continue
+            if '   物理' == line[0:5]:
+                mac = bytes.fromhex(line[35:52].replace('-', ''))
+                if b'\x00\x00\x00\x00\x00\x00' == mac:
+                    mac = b''
+                continue
             if '   Description' == line[0:14] \
-                    and 'Microsoft Wi-Fi Direct Virtual' == line[39:69]:
+                    and 'Microsoft Wi-Fi Direct Virtual' == line[39:69] \
+                    or '   描述' == line[0:5] \
+                    and 'Microsoft Wi-Fi Direct Virtual' == line[37:67]:
                 virtual = True
                 continue
             if '   IPv' == line[0:6]:
