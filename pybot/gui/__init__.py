@@ -3,9 +3,17 @@
 __all__ = [
     'App',
     'Modal',
-    'License'
+    'License',
+    'ELicenseApp',
+    'ELicenseExpired',
+    'ELicenseUpgraded',
+    'ELicenseHardware'
 ]
 
 from .app import App
 from .modal import Modal
 from .license import License
+from .elicenseapp import ELicenseApp
+from .elicenseexpired import ELicenseExpired
+from .elicenseupgraded import ELicenseUpgraded
+from .elicensehardware import ELicenseHardware

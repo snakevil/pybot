@@ -9,6 +9,7 @@ import rsa
 
 from .. import core
 from .app import App
+from .elicenseapp import ELicenseApp
 
 __all__ = ['License']
 
@@ -80,17 +81,17 @@ class License(object):
 
     def verify(self, app):
         if not isinstance(app, App):
-            return False
+            raise ELicenseApp()
         if self.deadline and time.time() > self.deadline:
-            return False
+            raise ELicenseExpired(self.deadline)
         appcls = type(app)
         if app.bundle() != self._bundle:
-            return False
+            raise ELicenseApp()
         if self._version and self._version != app.version()[0]:
-            return False
+            raise ELicenseUpgraded(self._version)
         if b'\x00\x00\x00\x00\x00\x00' != self.hwaddr \
                 and self.hwaddr not in self._mac():
-            return False
+            raise ELicenseHardware(self.hwaddr)
         return True
 
     @classmethod
