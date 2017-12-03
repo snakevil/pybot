@@ -13,14 +13,17 @@ class App(object):
         self.on_close(self._on_close)
         self.prefix = sys.prefix if hasattr(sys, 'frozen') \
             else path.dirname(path.realpath(sys.argv[0]))
-        self.debug = path.exists('/'.join([self.prefix, '__debug__.txt']))
+        self.id = path.basename(sys.argv[0]).split('.')[0]
+        self.debug = path.exists(
+            '%s/%s.__debug__.txt' % (self.prefix, self.id)
+        )
 
     def _on_close(self):
         self.gui.quit()
 
     @classmethod
     def bundle(cls):
-        return '.'.join([cls.__module__, cls.__name__])
+        return '%s.%s' % (cls.__module__, cls.__name__)
 
     @staticmethod
     def version():
