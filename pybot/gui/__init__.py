@@ -7,7 +7,9 @@ __all__ = [
     'ELicenseApp',
     'ELicenseExpired',
     'ELicenseUpgraded',
-    'ELicenseHardware'
+    'ELicenseHardware',
+    'ELicenseBlob',
+    'ELicenseStruct'
 ]
 
 from .app import App
@@ -17,3 +19,5 @@ from .elicenseapp import ELicenseApp
 from .elicenseexpired import ELicenseExpired
 from .elicenseupgraded import ELicenseUpgraded
 from .elicensehardware import ELicenseHardware
+from .elicenseblob import ELicenseBlob
+from .elicensestruct import ELicenseStruct

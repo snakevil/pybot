@@ -13,6 +13,8 @@ from .elicenseapp import ELicenseApp
 from .elicenseexpired import ELicenseExpired
 from .elicenseupgraded import ELicenseUpgraded
 from .elicensehardware import ELicenseHardware
+from .elicenseblob import ELicenseBlob
+from .elicensestruct import ELicenseStruct
 
 __all__ = ['License']
 
@@ -32,9 +34,12 @@ class License(object):
     def load(cls, blob, cipher):
         lic = cls()
         lic._exist = True
-        blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
         try:
-            if 1 == blob[0]:
+            blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
+        except:
+            raise ELicenseBlob()
+        if 1 == blob[0]:
+            try:
                 offset = 17
                 version, lic.hwaddr, lic.born, lic.deadline, \
                 lic._version, size = struct.unpack('>B6s2I2B', blob[0:offset])
@@ -51,8 +56,8 @@ class License(object):
                 size = blob[offset]
                 offset += 1
                 lic.email = blob[offset:offset + size].decode('utf-8')
-        except:
-            pass
+            except:
+                raise ELicenseStruct()
         return lic
 
     def save(self, cipher):
@@ -135,20 +140,17 @@ class License(object):
         blen = len(bundle)
         macs = cls.mac()
         mlen = len(macs)
-        payload = struct.pack(
-            '>B%ds2B%ds' % (6 * mlen, blen),
-            mlen,
-            b''.join(macs),
-            app.version()[0],
-            blen,
-            bundle
+        return rsa.encrypt(
+            struct.pack(
+                '>B%ds2B%ds' % (6 * mlen, blen),
+                mlen,
+                b''.join(macs),
+                app.version()[0],
+                blen,
+                bundle
+            ),
+            rsa.PublicKey.load_pkcs1(cipher)
         )
-        sign = rsa.sign(payload, rsa.PrivateKey.load_pkcs1(cipher), 'MD5')
-        return b''.join([
-            payload,
-            struct.pack('>H', len(sign)),
-            sign
-        ])
 
     @classmethod
     def mac(cls):
