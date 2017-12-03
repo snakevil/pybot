@@ -97,7 +97,7 @@ class License(object):
         if self._version and self._version != app.version()[0]:
             raise ELicenseUpgraded(self._version)
         if b'\x00\x00\x00\x00\x00\x00' != self.hwaddr \
-                and self.hwaddr not in self._mac():
+                and self.hwaddr not in self.mac():
             raise ELicenseHardware(self.hwaddr)
         return True
 
@@ -118,7 +118,7 @@ class License(object):
         if isinstance(props['hwaddr'], bytes) and 6 == len(props['hwaddr']):
             lic.hwaddr = props['hwaddr']
         else:
-            lic.hwaddr = lic._mac()[0]
+            lic.hwaddr = lic.mac()[0]
         lic.deadline = 0 if 1 > props['days'] \
             else lic.born + 86400 * int(props['days'])
         lic.user = props['user']
@@ -133,7 +133,7 @@ class License(object):
         appcls = type(app)
         bundle = app.bundle().encode('utf-8')
         blen = len(bundle)
-        macs = cls._mac()
+        macs = cls.mac()
         mlen = len(macs)
         payload = struct.pack(
             '>B%ds2B%ds' % (6 * mlen, blen),
@@ -151,7 +151,7 @@ class License(object):
         ])
 
     @classmethod
-    def _mac(cls):
+    def mac(cls):
         if not hasattr(cls, '_macs'):
             system = platform.system()
             if 'Windows' == system:
