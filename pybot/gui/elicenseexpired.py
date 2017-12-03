@@ -10,6 +10,6 @@ class ELicenseExpired(core.Error):
     def __init__(self, time):
         super(ELicenseExpired, self).__init__(
             0x4002,
-            'LICENSE Expired due %s.' % t.strftime('%c', time),
+            'LICENSE Expired due %s.' % t.strftime('%c', t.localtime(time)),
             time = time
         )

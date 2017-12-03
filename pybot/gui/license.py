@@ -18,6 +18,7 @@ __all__ = ['License']
 
 class License(object):
     def __init__(self):
+        self._exist = False
         self._bundle = ''
         self._version = 255
         self.hwaddr = b'\xfe\xdc\xba\x98\x76\x54'
@@ -30,6 +31,7 @@ class License(object):
     @classmethod
     def load(cls, blob, cipher):
         lic = cls()
+        lic._exist = True
         blob = rsa.decrypt(blob, rsa.PrivateKey.load_pkcs1(cipher))
         try:
             if 1 == blob[0]:
@@ -83,6 +85,8 @@ class License(object):
         )
 
     def verify(self, app):
+        if not self._exist:
+            return False
         if not isinstance(app, App):
             raise ELicenseApp()
         if self.deadline and time.time() > self.deadline:
