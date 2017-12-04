@@ -3,6 +3,7 @@
 import tkinter as tk
 
 import sys
+import platform
 from os import path
 
 __all__ = ['App']
@@ -11,6 +12,7 @@ class App(object):
     def __init__(self):
         self.gui = tk.Tk()
         self.gui.protocol('WM_DELETE_WINDOW', self._on_close)
+        self.platform = platform.system()
         self.prefix = sys.prefix if hasattr(sys, 'frozen') \
             else path.dirname(path.realpath(sys.argv[0]))
         self.id = path.basename(sys.argv[0]).split('.')[0]
