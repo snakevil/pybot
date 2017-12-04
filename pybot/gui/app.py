@@ -10,16 +10,17 @@ __all__ = ['App']
 class App(object):
     def __init__(self):
         self.gui = tk.Tk()
-        self.on_close(self._on_close)
+        self.gui.protocol('WM_DELETE_WINDOW', self._on_close)
         self.prefix = sys.prefix if hasattr(sys, 'frozen') \
             else path.dirname(path.realpath(sys.argv[0]))
         self.id = path.basename(sys.argv[0]).split('.')[0]
-        self.debug = path.exists(
-            '%s/%s.__debug__.txt' % (self.prefix, self.id)
-        )
+        self._debug = False
 
     def _on_close(self):
         self.gui.quit()
+
+    def _on_debug(self, value):
+        pass
 
     @classmethod
     def bundle(cls):
@@ -32,5 +33,10 @@ class App(object):
     def run(self):
         self.gui.mainloop()
 
-    def on_close(self, handler):
-        self.gui.protocol('WM_DELETE_WINDOW', handler)
+    def debug(self, value = None):
+        if None != value:
+            debug = bool(value)
+            if debug != self._debug:
+                self._debug = debug
+                self._on_debug(debug)
+        return self._debug
