@@ -34,3 +34,6 @@ class Point(object):
             int(round(self.x + radius * math.cos(degree))),
             int(round(self.y - radius * math.sin(degree)))
         )
+
+    def skew(self, x, y):
+        return type(self)(self.x + x, self.y + y)

@@ -61,3 +61,9 @@ class Rect(object):
             random.randint(self.left + padding, self.right - padding),
             random.randint(self.top + padding, self.bottom - padding)
         )
+
+    def skew(self, x, y):
+        return type(self)(
+            (self.left + x, self.top + y),
+            (self.right + x, self.bottom + y)
+        )

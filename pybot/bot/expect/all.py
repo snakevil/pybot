@@ -31,4 +31,5 @@ class All(Base):
         for expect in self._expects:
             if not expect.test(event):
                 return False
+            self.spots.update(expect.spots)
         return True
