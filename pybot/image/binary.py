@@ -1,13 +1,16 @@
 # encoding: utf-8
 
+import struct
+import base64
+
 from .base import Base
 from ._codec import PNG
 
 class Binary(Base):
     def __init__(self, size, raw, threshold = 0):
-        threshold = threshold or self.otsu(raw)
+        self.threshold = threshold or self.otsu(raw)
         for cursor in range(0, len(raw), 4):
-            raw[cursor] = 0 if raw[cursor] < threshold else 255
+            raw[cursor] = 0 if raw[cursor] < self.threshold else 255
         raw[1::4] = raw[0::4]
         raw[2::4] = raw[0::4]
         super(Binary, self).__init__(size, raw)
@@ -59,9 +62,8 @@ class Binary(Base):
             bits = bytearray(size << 3)
             bits[0:length] = self.rgba[0::4]
             alob = bytearray(size)
-            index = 0
-            cursor = 0
-            while cursor < size:
+            for cursor in range(size):
+                index = cursor << 3
                 alob[cursor] = ((bits[index] & 1) << 7) \
                     + ((bits[index + 1] & 1) << 6) \
                     + ((bits[index + 2] & 1) << 5) \
@@ -70,7 +72,34 @@ class Binary(Base):
                     + ((bits[index + 5] & 1) << 2) \
                     + ((bits[index + 6] & 1) << 1) \
                     + (bits[index + 7] & 1)
-                index += 8
-                cursor += 1
             self._digest = bytes(alob).hex()
         return self._digest
+
+    def dump(self):
+        width = 64
+        blob = b''.join([
+            struct.pack('>2HB', self.width, self.height, self.threshold),
+            bytes.fromhex(self.digest)
+        ])
+        clob = base64.b64encode(blob).decode('utf-8')
+        return '\n'.join(
+            clob[i:i + width] for i in range(0, len(clob), width)
+        )
+
+    @classmethod
+    def parse(cls, template):
+        clob = template.strip().replace('\n', '')
+        blob = base64.b64decode(clob.encode('utf-8'))
+        width, height, threshold = struct.unpack('>2HB', blob[0:5])
+        length = width * height * 4
+        raw = bytearray(length)
+        bize = range(8)
+        for i in range(5, len(blob)):
+            j = (i - 5) << 5
+            bits = bin(blob[i])[2:].zfill(8)
+            for k in bize:
+                l = k << 2
+                if j + l < length:
+                    raw[j + l] = 255 * int(bits[k])
+                    raw[j + l + 3] = 255
+        return cls((width, height), raw, threshold)
