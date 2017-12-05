@@ -9,11 +9,12 @@ from ._codec import PNG
 class Binary(Base):
     def __init__(self, size, raw, threshold = 0):
         self.threshold = threshold or self.otsu(raw)
-        for cursor in range(0, len(raw), 4):
-            raw[cursor] = 0 if raw[cursor] < self.threshold else 255
-        raw[1::4] = raw[0::4]
-        raw[2::4] = raw[0::4]
-        super(Binary, self).__init__(size, raw)
+        rgba = bytearray(raw)
+        for cursor in range(0, len(rgba), 4):
+            rgba[cursor] = 0 if raw[cursor] < self.threshold else 255
+        rgba[1::4] = raw[0::4]
+        rgba[2::4] = raw[0::4]
+        super(Binary, self).__init__(size, rgba)
         self._digest = ''
 
     def _png(self):

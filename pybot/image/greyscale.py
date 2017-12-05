@@ -11,14 +11,15 @@ class Greyscale(Base):
         '''
         if not isinstance(depth, int) or depth not in [1, 2, 4, 8]:
             raise EDepth(depth)
+        rgba = bytearray(raw)
         bits = 8 - depth
-        for cursor in range(0, len(raw), 4):
-            raw[cursor] = (
+        for cursor in range(0, len(rgba), 4):
+            rgba[cursor] = (
                 raw[cursor] + (raw[cursor + 1] << 1) + raw[cursor + 2]
             ) >> 2 + bits << bits
-        raw[1::4] = raw[0::4]
-        raw[2::4] = raw[0::4]
-        super(Greyscale, self).__init__(size, raw)
+        rgba[1::4] = rgba[0::4]
+        rgba[2::4] = rgba[0::4]
+        super(Greyscale, self).__init__(size, rgba)
         self.depth = depth
         self._threshold = 0
 
