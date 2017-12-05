@@ -27,7 +27,7 @@ class All(Base):
     def __or__(self, another):
         return Any(self, another)
 
-    def test(self, event):
+    def _test(self, event):
         for expect in self._expects:
             if not expect.test(event):
                 return False

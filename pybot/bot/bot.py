@@ -51,7 +51,7 @@ class Bot(threading.Thread):
             self._player.idle(self._['tick'])
             try:
                 wrapper['screen'] = self._player.snap()
-                now = time.time()
+                now = wrapper['time'] = time.time()
                 if not wrapper['screen']:
                     wrapper['log'](
                         '%s had no screen input' % (wrapper['target']),

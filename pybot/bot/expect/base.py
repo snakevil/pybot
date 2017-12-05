@@ -4,6 +4,8 @@ from ... import core, player
 
 class Base(object):
     def __init__(self, **spots):
+        self._time = 0
+        self._result = False
         self.spots = {}
         for id in spots:
             self.spot(id, *spots[id])
@@ -45,4 +47,9 @@ class Base(object):
         return self
 
     def test(self, event):
+        if event.time != self._time:
+            self._result = self._test(event)
+        return self._result
+
+    def _test(self, event):
         return False

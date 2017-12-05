@@ -23,7 +23,7 @@ class Template(Expect):
                 else ', %r' % self._region
         )
 
-    def test(self, event):
+    def _test(self, event):
         if not event.screen:
             return False
         x0 = y0 = 0

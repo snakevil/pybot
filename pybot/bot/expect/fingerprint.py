@@ -30,7 +30,7 @@ class Fingerprint(Expect):
                 else ', %d' % self._threshold
         )
 
-    def test(self, event):
+    def _test(self, event):
         if not event.screen:
             return False
         digest = event.screen.crop(

@@ -15,5 +15,5 @@ class Negative(Expect):
     def __repr__(self):
         return 'Negative(%r)' % self._expect
 
-    def test(self, event):
+    def _test(self, event):
         return not self._expect.test(event)

@@ -26,7 +26,7 @@ class Any(Base):
         self._expects.append(another)
         return self
 
-    def test(self, event):
+    def _test(self, event):
         self.spots = self._spots.copy()
         for expect in self._expects:
             if expect.test(event):
