@@ -4,6 +4,7 @@ __all__ = [
     'Base', 'Expect',
     'All', 'Any',
     'Negative',
+    'State',
     'Pixels', 'Colors', 'Fingerprint', 'Template'
 ]
 
@@ -16,3 +17,4 @@ from .pixels import Pixels
 from .colors import Colors
 from .fingerprint import Fingerprint
 from .template import Template
+from .state import State
