@@ -3,18 +3,22 @@
 from ... import image, player
 from .expect import Expect
 from .etemplate import ETemplate
+from .ethreshold import EThreshold
 
 class Template(Expect):
     """docstring for Template"""
-    def __init__(self, template, region = None, **spots):
+    def __init__(self, template, region = None, threshold = 10, **spots):
         super(Template, self).__init__(**spots)
         self._spots = self.spots.copy()
         try:
             self._needle = image.template(template)
-        except:
+        except Exception as e:
             raise ETemplate(template)
         self._region = region if not region or isinstance(region, player.Rect) \
             else player.Rect(*region)
+        if not isinstance(threshold, int) or 0 > threshold:
+            raise EThreshold(threshold)
+        self._threshold = threshold
 
     def __repr__(self):
         return 'Template(%r%s)' % (
@@ -46,26 +50,39 @@ class Template(Expect):
         return True
 
     def _search(self, haystack):
-        candinates = []
+        candidates = []
         width = haystack.width - self._needle.width + 1
         for y in range(haystack.height - self._needle.height + 1):
-            candinates += range(haystack.width * y, haystack.width * y + width)
-        size = self._needle.width * 4
-        times = 0
+            candidates += [
+                (i, 0) for i \
+                    in range(haystack.width * y, haystack.width * y + width)
+            ]
+        threshold = self._threshold * self._needle.width // 100
+        width = self._needle.width << 2
+        limit = 0
         for y in range(self._needle.height):
+            limit += threshold
             filtered = []
-            template = self._needle.rgba[size * y:size * (y + 1)]
-            for i in candinates:
-                j = (i + haystack.width * y) * 4
-                times += 1
-                if haystack.rgba[j:j + size] == template:
-                    filtered.append(i)
-            candinates = filtered
-            if not len(candinates):
+            template = self._needle.rgba[width * y:width * (y + 1)]
+            for candidate, bad in candidates:
+                offset = (candidate + haystack.width * y) << 2
+                case = haystack.rgba[offset:offset + width]
+                if case == template:
+                    filtered.append((candidate, bad))
+                else:
+                    for i in range(0, width, 4):
+                        if case[i] != template[i]:
+                            bad += 1
+                        if bad > limit:
+                            break
+                    else:
+                        filtered.append((candidate, bad))
+            candidates = filtered
+            if not len(candidates):
                 break
-        if not candinates:
+        if not candidates:
             return (-1, -1)
         return (
-            candinates[0] % haystack.width,
-            candinates[0] // haystack.width
+            candidates[0][0] % haystack.width,
+            candidates[0][0] // haystack.width
         )

@@ -8,7 +8,7 @@ class Any(Base):
         self._spots = self.spots.copy()
         self._expects = []
         for expect in expects:
-            if isinstance(expect, All):
+            if isinstance(expect, Any):
                 self._expects.extend(expect._expects)
             else:
                 self._expects.append(expect)
