@@ -48,9 +48,9 @@ class Base(object):
         right = max(top_left[0], bottom_right[0])
         bottom = max(top_left[1], bottom_right[1])
         left = min(top_left[0], bottom_right[0])
-        if 1 > left or left >= self.width or 1 > top or top >= self.height:
+        if 0 > left or left >= self.width or 0 > top or top >= self.height:
             raise ECoordinate(left, top)
-        if 1 > right or right >= self.width or 1 > bottom or bottom >= self.height:
+        if 1 > right or right > self.width or 1 > bottom or bottom > self.height:
             raise ECoordinate(right, bottom)
         width = max(1, right - left)
         height = max(1, bottom - top)

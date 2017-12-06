@@ -10,10 +10,12 @@ class Binary(Base):
     def __init__(self, size, raw, threshold = 0):
         self.threshold = threshold or self.otsu(raw)
         rgba = bytearray(raw)
-        for cursor in range(0, len(rgba), 4):
+        length = len(rgba)
+        for cursor in range(0, length, 4):
             rgba[cursor] = 0 if raw[cursor] < self.threshold else 255
-        rgba[1::4] = raw[0::4]
-        rgba[2::4] = raw[0::4]
+        rgba[1::4] = rgba[0::4]
+        rgba[2::4] = rgba[0::4]
+        rgba[3::4] = [255] * (length >> 2)
         super(Binary, self).__init__(size, rgba)
         self._digest = ''
 
@@ -101,6 +103,5 @@ class Binary(Base):
             for k in bize:
                 l = k << 2
                 if j + l < length:
-                    raw[j + l] = 255 * int(bits[k])
-                    raw[j + l + 3] = 255
+                    raw[j + l] = 255 if int(bits[k]) else 0
         return cls((width, height), raw, threshold)
