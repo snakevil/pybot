@@ -40,6 +40,7 @@ class Bot(threading.Thread):
             'target': str(self._player),
             'idle': self._player.idle,
             'click': self._player.click,
+            'drag': self._player.drag,
             'stop': self.stop,
             'enable': self.enable,
             'disable': self.disable,

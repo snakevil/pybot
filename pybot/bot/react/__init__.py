@@ -5,7 +5,7 @@ __all__ = [
     'Log', 'Cast',
     'Snap',
     'Wait',
-    'Fire', 'Spot', 'OK', 'Cancel'
+    'Fire', 'Spot', 'OK', 'Cancel', 'Slide'
 ]
 
 from .base import Base
@@ -18,3 +18,4 @@ from .spot import Spot
 from .ok import OK
 from .cancel import Cancel
 from .cast import Cast
+from .slide import Slide
