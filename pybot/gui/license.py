@@ -124,8 +124,14 @@ class License(object):
             lic.hwaddr = props['hwaddr']
         else:
             lic.hwaddr = lic.mac()[0]
-        lic.deadline = 0 if 1 > props['days'] \
-            else lic.born + 86400 * int(props['days'])
+        born = props.get('born')
+        deadline = props.get('deadline')
+        if born and deadline:
+            lic.born = born
+            lic.deadline = deadline
+        else:
+            lic.deadline = 0 if 1 > props['days'] \
+                else lic.born + 86400 * int(props['days'])
         lic.user = props['user']
         lic.organization = props['organization']
         lic.email = props['email']
