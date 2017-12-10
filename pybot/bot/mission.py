@@ -153,6 +153,10 @@ class Mission(object):
             self._bots[company].inject(*self._reflexes[company])
             self._bots[company].start()
 
+    def completed(self):
+        for bot in self._bots.values():
+            bot.player.quit()
+
     def _error(self, bot):
         self.halt(0, None)
         others = [other for other in self._bots.values() if other != bot]
