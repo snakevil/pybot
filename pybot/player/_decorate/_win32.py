@@ -81,6 +81,11 @@ def _show_gtor(cmd):
 minimize = _show_gtor(6)
 restore = _show_gtor(9)
 
+def destroy(hwnd):
+    result = user32.DestroyWindow(hwnd)
+    if not result:
+        raise EWin32('user32.DestroyWindow')
+
 def foreground(hwnd):
     result = user32.SetForegroundWindow(hwnd)
     if not result:
@@ -248,6 +253,6 @@ __all__ = [
     'query',
     'get_pid', 'is_minimized', 'minimize', 'restore', 'foreground',
     'get_rect', 'get_size',
-    'click', 'drag',
-    'grab'
+    'click', 'drag', 'grab',
+    'destroy'
 ]

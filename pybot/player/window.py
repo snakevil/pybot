@@ -54,6 +54,9 @@ class Window(object):
         _decorate.restore(self._handle)
         return self.idle(10)
 
+    def quit(self):
+        _decorate.destroy(self._handle)
+
     def focus(self):
         self.restore()
         _decorate.foreground(self._handle)

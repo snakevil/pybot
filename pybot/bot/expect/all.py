@@ -16,6 +16,9 @@ class All(Base):
     def __repr__(self):
         return 'All(%s)' % repr(self._expects)[1:-1]
 
+    def __str__(self):
+        return str(self._expects[-1])
+
     def __and__(self, another):
         return type(self)(self, another)
 

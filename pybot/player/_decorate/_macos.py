@@ -12,7 +12,7 @@ def query(pattern):
     raise core.ETodo('player._decorate._macos.query')
 
 def get_pid(hwnd):
-    raise core.ETodo('player._decorate._macos.get_pid')
+    return 0
 
 def is_minimized(hwnd):
     raise core.ETodo('player._decorate._macos.is_minimized')
@@ -22,6 +22,9 @@ def minimize(hwnd):
 
 def restore(hwnd):
     raise core.ETodo('player._decorate._macos.restore')
+
+def destroy(hwnd):
+    raise core.ETodo('player._decorate._macos.destroy')
 
 def foreground(hwnd):
     raise core.ETodo('player._decorate._macos.foreground')

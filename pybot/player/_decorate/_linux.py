@@ -23,6 +23,9 @@ def minimize(hwnd):
 def restore(hwnd):
     raise core.ETodo('player._decorate._linux.restore')
 
+def destroy(hwnd):
+    raise core.ETodo('player._decorate._linux.destroy')
+
 def foreground(hwnd):
     raise core.ETodo('player._decorate._linux.foreground')
 

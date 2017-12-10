@@ -107,6 +107,12 @@ class Mission(object):
         else:
             self._log = self._logger
 
+        on_error = context.get('on_error')
+        if on_error:
+            del context['on_error']
+            if callable(on_error):
+                self._on_error = on_error
+
         fps = context.get('fps')
         if fps:
             del context['fps']
@@ -141,7 +147,25 @@ class Mission(object):
                 context.copy(),
                 tick = tick,
                 log = self._log,
-                timeout = timeout
+                timeout = timeout,
+                on_error = self._error
             )
             self._bots[company].inject(*self._reflexes[company])
             self._bots[company].start()
+
+    def _error(self, bot):
+        self.halt(0, None)
+        others = [other for other in self._bots.values() if other != bot]
+        while self.running:
+            others[0].join(.1)
+        try:
+            bot.player.quit()
+        except:
+            pass
+        for bot in others:
+            self._log('%s quit' % bot.player, 4)
+            bot.player.quit()
+        self._on_error()
+
+    def _on_error(self):
+        pass

@@ -7,7 +7,7 @@ from .event import Event
 class Bot(threading.Thread):
     def __init__(self, player, context, **config):
         super(Bot, self).__init__()
-        self._player = player
+        self.player = player
         self._ = config
         self.context = context
         self._enabled = threading.Event()
@@ -17,8 +17,9 @@ class Bot(threading.Thread):
         self.enable()
 
     def stop(self):
-        self._['log']('%s cleaning...' % self._player, 1)
-        self._exited = True
+        if not self._exited:
+            self._['log']('%s cleaning...' % self.player, 1)
+            self._exited = True
 
     def inject(self, *reflexes):
         for reflex in reflexes:
@@ -35,12 +36,12 @@ class Bot(threading.Thread):
         self._enabled.clear()
 
     def run(self):
-        self._['log']('%s activated' % self._player, 2)
+        self._['log']('%s activated' % self.player, 2)
         wrapper = {
-            'target': str(self._player),
-            'idle': self._player.idle,
-            'click': self._player.click,
-            'drag': self._player.drag,
+            'target': str(self.player),
+            'idle': self.player.idle,
+            'click': self.player.click,
+            'drag': self.player.drag,
             'stop': self.stop,
             'enable': self.enable,
             'disable': self.disable,
@@ -49,9 +50,9 @@ class Bot(threading.Thread):
         reflexes = self._reflexes.values()
         while not self._exited:
             self._enabled.wait()
-            self._player.idle(self._['tick'])
+            self.player.idle(self._['tick'])
             try:
-                wrapper['screen'] = self._player.snap()
+                wrapper['screen'] = self.player.snap()
                 now = wrapper['time'] = time.time()
                 if not wrapper['screen']:
                     wrapper['log'](
@@ -81,5 +82,8 @@ class Bot(threading.Thread):
                     self._activity = now
                 self.context.update(event)
             except Exception as e:
-                self._['log']('%s %s' % (self._player, e), 3)
-        self._['log']('%s clear' % self._player, 2)
+                self._exited = True
+                self._['log']('%s broken' % self.player, 4)
+                self._['on_error'](self)
+                return
+        self._['log']('%s clear' % self.player, 2)
