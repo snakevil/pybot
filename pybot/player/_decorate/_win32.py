@@ -82,9 +82,10 @@ minimize = _show_gtor(6)
 restore = _show_gtor(9)
 
 def destroy(hwnd):
-    result = user32.DestroyWindow(hwnd)
+    WM_CLOSE = 0x10
+    result = user32.PostMessageW(hwnd, WM_CLOSE, 0, 0)
     if not result:
-        raise EWin32('user32.DestroyWindow')
+        raise EWin32('user32.PostMessageW')
 
 def foreground(hwnd):
     result = user32.SetForegroundWindow(hwnd)
