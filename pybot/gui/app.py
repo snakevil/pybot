@@ -6,23 +6,27 @@ import sys
 import platform
 from os import path
 
+from .. import core
+
 __all__ = ['App']
 
-class App(object):
-    def __init__(self):
-        self.gui = tk.Tk()
-        self.gui.protocol('WM_DELETE_WINDOW', self._on_close)
+class App(core.Firable):
+    def __init__(self, *args, **kwargs):
+        super(App, self).__init__()
+        self.window = tk.Tk(*args, **kwargs)
+        self.window.protocol('WM_DELETE_WINDOW', lambda: self.fire('close'))
         self.platform = platform.system()
         self.prefix = sys.prefix if hasattr(sys, 'frozen') \
             else path.dirname(path.realpath(sys.argv[0]))
         self.id = path.basename(sys.argv[0]).split('.')[0]
+
         self._debug = False
 
-    def _on_close(self):
-        self.gui.quit()
+        self.on('close', lambda: self.window.quit())
 
-    def _on_debug(self, value):
-        pass
+        def on_error(error):
+            raise error
+        self.on('error', on_error)
 
     @classmethod
     def bundle(cls):
@@ -33,12 +37,12 @@ class App(object):
         return (1, 0, 0, 0)
 
     def run(self):
-        self.gui.mainloop()
+        self.window.mainloop()
 
     def debug(self, value = None):
         if None != value:
             debug = bool(value)
             if debug != self._debug:
                 self._debug = debug
-                self._on_debug(debug)
+                self.fire('debug', debug)
         return self._debug

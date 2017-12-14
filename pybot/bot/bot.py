@@ -2,9 +2,12 @@
 
 import threading
 import time
+
+from .. import core
+
 from .event import Event
 
-class Bot(threading.Thread):
+class Bot(core.Firable, threading.Thread):
     def __init__(self, player, context, **config):
         super(Bot, self).__init__()
         self.player = player
@@ -18,7 +21,7 @@ class Bot(threading.Thread):
 
     def stop(self):
         if not self._exited:
-            self._['log']('%s cleaning...' % self.player, 1)
+            self.fire('log', '%s cleaning...' % self.player, 1)
             self._exited = True
 
     def inject(self, *reflexes):
@@ -36,7 +39,7 @@ class Bot(threading.Thread):
         self._enabled.clear()
 
     def run(self):
-        self._['log']('%s activated' % self.player, 2)
+        self.fire('log', '%s activated' % self.player, 2)
         wrapper = {
             'target': str(self.player),
             'idle': self.player.idle,
@@ -44,8 +47,7 @@ class Bot(threading.Thread):
             'drag': self.player.drag,
             'stop': self.stop,
             'enable': self.enable,
-            'disable': self.disable,
-            'log': self._['log']
+            'disable': self.disable
         }
         reflexes = self._reflexes.values()
         while not self._exited:
@@ -55,7 +57,8 @@ class Bot(threading.Thread):
                 wrapper['screen'] = self.player.snap()
                 now = wrapper['time'] = time.time()
                 if not wrapper['screen']:
-                    wrapper['log'](
+                    self.fire(
+                        'log',
                         '%s had no screen input' % (wrapper['target']),
                         3
                     )
@@ -66,24 +69,22 @@ class Bot(threading.Thread):
                         self._activity = now
                         break
                 if self._activity + self._['timeout'] < now:
-                    event.log('%s timeout' % event.target, 3)
+                    self.fire('log', '%s timeout' % event.target, 3)
                     snappath = '%s-timeout-%d.png' % (
                         event.target[1:],
                         int(now)
                     )
                     event.screen.save(snappath)
-                    event.log(
-                        '%s screenshot to %r' % (
-                            event.target,
-                            snappath
-                        ),
+                    self.fire(
+                        'log',
+                        '%s screenshot to %r' % (event.target, snappath),
                         1
                     )
                     self._activity = now
                 self.context.update(event)
             except Exception as e:
                 self._exited = True
-                self._['log']('%s broken' % self.player, 4)
-                self._['on_error'](self)
+                self.fire('log', '%s broken' % self.player, 4)
+                self.fire('error', self)
                 return
-        self._['log']('%s clear' % self.player, 2)
+        self.fire('log', '%s clear' % self.player, 2)
