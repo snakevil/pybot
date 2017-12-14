@@ -20,7 +20,7 @@ class App(core.Firable):
             else path.dirname(path.realpath(sys.argv[0]))
         self.id = path.basename(sys.argv[0]).split('.')[0]
 
-        self._debug = False
+        self._debug = None
 
         self.on('close', lambda: self.window.quit())
 

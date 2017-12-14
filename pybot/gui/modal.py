@@ -2,11 +2,14 @@
 
 import tkinter as tk
 
+from .. import core
+
 __all__ = ['Modal']
 
-class Modal(tk.Toplevel):
+class Modal(tk.Toplevel, core.Firable):
     def __init__(self, parent, title, **kwargs):
         super().__init__(parent, **kwargs)
+        core.Firable.__init__(self)
         self._parent = parent
         self.title(title)
         self.resizable(False, False)
@@ -34,4 +37,5 @@ class Modal(tk.Toplevel):
         self._parent.wait_window(self)
 
     def close(self, event = None):
-        self.destroy()
+        if self.fire('close'):
+            self.destroy()

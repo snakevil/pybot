@@ -26,7 +26,7 @@ class Firable(object):
                     succeed = result
                 if None != succeed and not succeed:
                     break
-            return succeed
+            return False != succeed
         except Exception as e:
             if 'error' == name:
                 if __debug__:

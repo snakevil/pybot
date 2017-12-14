@@ -21,7 +21,18 @@ class Mission(core.Firable):
         self._level = 1
         self._bots = {}
 
-        self.on('log', self._on_log)
+        def on_log(self, message, level = 0):
+            if level < self._level:
+                return
+            desc = '[debg] ' if not level \
+                else '[info] ' if 1 == level \
+                else '[warn] ' if 2 == level \
+                else '[errr] ' if 3 == level \
+                else '[crit] ' if 4 == level \
+                else ''
+            print('%s%s' % (desc, message))
+            return False
+        self.on('log', on_log)
 
     def company(self, company = ''):
         if company not in self._companies:
@@ -128,7 +139,6 @@ class Mission(core.Firable):
                 players[company],
                 context.copy(),
                 tick = tick,
-                log = self._log,
                 timeout = timeout
             ).on(
                 'log',
@@ -142,19 +152,8 @@ class Mission(core.Firable):
 
     def complete(self):
         for bot in self._bots.values():
+            self.fire('log', '%s quit' % bot.player, 4)
             bot.player.quit()
-
-    def _on_log(self, message, level = 0):
-        if level < self._level:
-            return
-        desc = '[debg] ' if not level \
-            else '[info] ' if 1 == level \
-            else '[warn] ' if 2 == level \
-            else '[errr] ' if 3 == level \
-            else '[crit] ' if 4 == level \
-            else ''
-        print('%s%s' % (desc, message))
-        return False
 
     def _on_bot_error(self, bot):
         self.halt(0, None)

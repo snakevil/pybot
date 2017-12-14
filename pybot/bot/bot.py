@@ -7,9 +7,10 @@ from .. import core
 
 from .event import Event
 
-class Bot(core.Firable, threading.Thread):
+class Bot(threading.Thread, core.Firable):
     def __init__(self, player, context, **config):
         super(Bot, self).__init__()
+        core.Firable.__init__(self)
         self.player = player
         self._ = config
         self.context = context
@@ -47,7 +48,8 @@ class Bot(core.Firable, threading.Thread):
             'drag': self.player.drag,
             'stop': self.stop,
             'enable': self.enable,
-            'disable': self.disable
+            'disable': self.disable,
+            'log': lambda *args: self.fire('log', *args)
         }
         reflexes = self._reflexes.values()
         while not self._exited:
