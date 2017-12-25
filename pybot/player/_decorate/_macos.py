@@ -35,6 +35,9 @@ def get_rect(hwnd):
 def get_size(hwnd):
     raise core.ETodo('player._decorate._macos.get_size')
 
+def resize(hwnd, width, height, top = 0, left = 0):
+    raise core.ETodo('player._decorate._macos.resize')
+
 def click(hwnd, x, y):
     raise core.ETodo('player._decorate._macos.click')
 

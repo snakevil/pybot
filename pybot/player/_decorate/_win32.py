@@ -106,6 +106,17 @@ def get_size(hwnd):
         raise EWin32('user32.GetClientRect')
     return (rect.right - rect.left, rect.bottom - rect.top)
 
+def resize(hwnd, width, height, top = 0, left = 0):
+    SWP_NOMOVE = 0x0002
+    SWP_NOZORDER = 0x0004
+    SWP_SHOWWINDOW = 0x0040
+    flag = SWP_NOZORDER + SWP_SHOWWINDOW
+    if not top and not left:
+        flag += SWP_NOMOVE
+    result = user32.SetWindowPos(hwnd, 0, left, top, width, height, flag)
+    if not result:
+        raise EWin32('user32.SetWindowPos')
+
 def _click_gtor():
     PROCESS_QUERY_INFORMATION = 0x400
     def _wait_idle(pid):
@@ -253,7 +264,7 @@ __all__ = [
     'get_euid', 'su',
     'query',
     'get_pid', 'is_minimized', 'minimize', 'restore', 'foreground',
-    'get_rect', 'get_size',
+    'get_rect', 'get_size', 'resize',
     'click', 'drag', 'grab',
     'destroy'
 ]
