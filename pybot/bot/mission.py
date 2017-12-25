@@ -158,12 +158,14 @@ class Mission(core.Firable):
     def _on_bot_error(self, bot):
         self.halt(0, None)
         others = [other for other in self._bots.values() if other != bot]
-        while self.running:
-            others[0].join(.1)
-        try:
-            bot.player.quit()
-        except:
-            pass
-        for bot in others:
-            self.fire('log', '%s quit' % bot.player, 4)
-            bot.player.quit()
+        if others:
+            while self.running:
+                others[0].join(.1)
+            try:
+                bot.player.quit()
+            except:
+                pass
+            for bot in others:
+                self.fire('log', '%s quit' % bot.player, 4)
+                bot.player.quit()
+        self.fire('error')

@@ -6,6 +6,7 @@ import time
 from .. import core
 
 from .event import Event
+from .efatal import EFatal
 
 class Bot(threading.Thread, core.Firable):
     def __init__(self, player, context, **config):
@@ -68,6 +69,8 @@ class Bot(threading.Thread, core.Firable):
                 event = Event(wrapper, self.context)
                 for reflex in reflexes:
                     if reflex.do(event):
+                        if event.get('__fatal__'):
+                            raise EFatal()
                         self._activity = now
                         break
                 if self._activity + self._['timeout'] < now:
@@ -86,7 +89,12 @@ class Bot(threading.Thread, core.Firable):
                 self.context.update(event)
             except Exception as e:
                 self._exited = True
-                self.fire('log', '%s broken' % self.player, 4)
+                if isinstance(e, EFatal):
+                    '''
+                    self.player.quit()
+                    '''
+                else:
+                    self.fire('log', '%s broken' % self.player, 4)
                 self.fire('error', self)
                 return
         self.fire('log', '%s clear' % self.player, 2)

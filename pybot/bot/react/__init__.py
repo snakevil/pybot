@@ -2,7 +2,7 @@
 
 __all__ = [
     'Base', 'React',
-    'Log', 'Cast', 'State',
+    'Log', 'Cast', 'State', 'Halt',
     'Snap',
     'Wait',
     'Fire', 'Spot', 'OK', 'Cancel', 'Slide'
@@ -20,3 +20,4 @@ from .cancel import Cancel
 from .cast import Cast
 from .slide import Slide
 from .state import State
+from .halt import Halt
