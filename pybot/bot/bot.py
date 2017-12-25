@@ -90,9 +90,7 @@ class Bot(threading.Thread, core.Firable):
             except Exception as e:
                 self._exited = True
                 if isinstance(e, EFatal):
-                    '''
                     self.player.quit()
-                    '''
                 else:
                     self.fire('log', '%s broken' % self.player, 4)
                 self.fire('error', self)
