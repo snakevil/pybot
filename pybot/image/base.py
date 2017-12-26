@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import time
 import struct
 import zlib
 from .. import core
@@ -17,6 +18,7 @@ class Base(object):
             self.width = size.width
             self.height = size.height
         self.rgba = raw
+        self.timestamp = time.time()
 
     def pixel(self, x, y):
         if 1 > x or x >= self.width or 1 > y or y >= self.height:

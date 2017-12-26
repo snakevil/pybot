@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+from os improt path
+
 from .. import core
 from .base import Base
 from .greyscale import Greyscale
@@ -21,7 +23,9 @@ class Image(Base):
         if '.png' != ext:
             raise core.ETodo('image.image.load.jpeg')
         png = PNG.decode(blob)
-        return cls((png.width, png.height), png.data)
+        image = cls((png.width, png.height), png.data)
+        image.timestamp = path.getmtime(filepath)
+        return image
 
     @staticmethod
     def template(blob):

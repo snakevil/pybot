@@ -17,7 +17,7 @@ class Bot(threading.Thread, core.Firable):
         self.context = context
         self._enabled = threading.Event()
         self._exited = False
-        self._activity = time.time()
+        self._activity = 0
         self._reflexes = {}
         self.enable()
 
@@ -53,12 +53,13 @@ class Bot(threading.Thread, core.Firable):
             'log': lambda *args: self.fire('log', *args)
         }
         reflexes = self._reflexes.values()
-        while not self._exited:
+        while True:
             self._enabled.wait()
             self.player.idle(self._['tick'])
+            if self._exited:
+                break
             try:
                 wrapper['screen'] = self.player.snap()
-                now = wrapper['time'] = time.time()
                 if not wrapper['screen']:
                     self.fire(
                         'log',
@@ -71,13 +72,13 @@ class Bot(threading.Thread, core.Firable):
                     if reflex.do(event):
                         if event.get('__fatal__'):
                             raise EFatal()
-                        self._activity = now
+                        self._activity = event.screen.timestamp
                         break
-                if self._activity + self._['timeout'] < now:
+                if self._activity + self._['timeout'] < event.screen.timestamp:
                     self.fire('log', '%s timeout' % event.target, 3)
-                    snappath = '%s-timeout-%d.png' % (
+                    snappath = '%s-timeout-%s.png' % (
                         event.target[1:],
-                        int(now)
+                        time.strftime('%y%m%d%H%M%S', event.screen.timestamp)
                     )
                     event.screen.save(snappath)
                     self.fire(
@@ -85,7 +86,7 @@ class Bot(threading.Thread, core.Firable):
                         '%s screenshot to %r' % (event.target, snappath),
                         1
                     )
-                    self._activity = now
+                    self._activity = event.screen.timestamp
                 self.context.update(event)
             except Exception as e:
                 self._exited = True
