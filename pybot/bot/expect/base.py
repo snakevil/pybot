@@ -48,6 +48,7 @@ class Base(object):
 
     def test(self, event):
         if event.screen.timestamp != self._time:
+            self._time = event.screen.timestamp
             self._result = self._test(event)
         return self._result
 
