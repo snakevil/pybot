@@ -10,5 +10,5 @@ class Log(React):
     def __repr__(self):
         return 'Log(%r)' % self._msg
 
-    def do(self, event):
-        event.log('%s logged %r' % (event.target, self._msg), 1)
+    def do(self, event, trace):
+        event.log('%s logged %r' % (event.target, self._msg), 3)

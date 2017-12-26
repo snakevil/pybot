@@ -1,6 +1,6 @@
 # encoding: utf-8
 
-from os improt path
+from os import path
 
 from .. import core
 from .base import Base

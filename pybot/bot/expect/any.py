@@ -26,10 +26,14 @@ class Any(Base):
         self._expects.append(another)
         return self
 
-    def _test(self, event):
+    def _test(self, event, trace):
         self.spots = self._spots.copy()
         for expect in self._expects:
-            if expect.test(event):
+            trace2 = []
+            matched = expect.test(event)
+            trace.append('%r %r' % (expect, matched))
+            trace.append(trace2)
+            if matched:
                 self.spots.update(expect.spots)
                 return True
         return False

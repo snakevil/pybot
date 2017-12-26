@@ -27,9 +27,7 @@ class Template(Expect):
                 else ', %r' % self._region
         )
 
-    def _test(self, event):
-        if not event.screen:
-            return False
+    def _test(self, event, trace):
         x0 = y0 = 0
         zone = event.screen
         if self._region:
@@ -44,6 +42,7 @@ class Template(Expect):
             return False
         x += x0
         y += y0
+        trace.append('= %r' % ((x, y),))
         self.spots = {
             k: (v[0].skew(x, y), v[1]) for k, v in self._spots.items()
         }

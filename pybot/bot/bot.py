@@ -74,11 +74,16 @@ class Bot(threading.Thread, core.Firable):
                             raise EFatal()
                         self._activity = event.screen.timestamp
                         break
-                if self._activity + self._['timeout'] < event.screen.timestamp:
+                if self._activity \
+                    and self._activity + self._['timeout'] \
+                        < event.screen.timestamp:
                     self.fire('log', '%s timeout' % event.target, 3)
                     snappath = '%s-timeout-%s.png' % (
                         event.target[1:],
-                        time.strftime('%y%m%d%H%M%S', event.screen.timestamp)
+                        time.strftime(
+                            '%y%m%d%H%M%S',
+                            time.localtime(event.screen.timestamp)
+                        )
                     )
                     event.screen.save(snappath)
                     self.fire(

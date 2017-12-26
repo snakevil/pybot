@@ -14,5 +14,5 @@ class Base(object):
     def __repr__(self):
         return '%s()' % type(self).__name__
 
-    def do(self, event):
+    def do(self, event, trace):
         raise core.ETodo('bot.react.base.do')

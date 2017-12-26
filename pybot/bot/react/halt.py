@@ -10,5 +10,5 @@ class Halt(React):
     def __repr__(self):
         return 'Halt()'
 
-    def do(self, event):
+    def do(self, event, trace):
         event['__fatal__'] = True

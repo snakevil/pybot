@@ -13,5 +13,7 @@ class State(Expect):
     def __repr__(self):
         return 'State(%r, %r)' % (self._field, self._value)
 
-    def _test(self, event):
-        return event.get('__state_%s__' % self._field) == self._value
+    def _test(self, event, trace):
+        value = event.get('__state_%s__' % self._field)
+        trace.append('= %r' % value)
+        return value == self._value

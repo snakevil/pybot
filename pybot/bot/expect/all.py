@@ -30,9 +30,13 @@ class All(Base):
     def __or__(self, another):
         return Any(self, another)
 
-    def _test(self, event):
+    def _test(self, event, trace):
         for expect in self._expects:
-            if not expect.test(event):
+            trace2 = []
+            matched = expect.test(event, trace2)
+            trace.append('%r %r' % (expect, matched))
+            trace.append(trace2)
+            if not matched:
                 return False
             self.spots.update(expect.spots)
         return True

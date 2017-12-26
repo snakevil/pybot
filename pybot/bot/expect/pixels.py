@@ -31,11 +31,11 @@ class Pixels(Expect):
                 else ', %d' % self._threshold
         )
 
-    def _test(self, event):
-        if not event.screen:
-            return False
+    def _test(self, event, trace):
         for expected in self._pixels:
             pixel = event.screen.pixel(expected.x, expected.y)
+            dist = pixel - expected
+            trace.append('= %8.3f/%8.3f %r' % (dist, self._threshold, pixel))
             if self._threshold < pixel - expected:
                 return False
         return True

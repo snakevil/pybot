@@ -23,6 +23,7 @@ class Wait(React):
             '' if self._nmsecs == self._xmsecs else ', %d' % self._xmsecs
         )
 
-    def do(self, event):
+    def do(self, event, trace):
         msecs = random.randint(self._nmsecs, self._xmsecs)
+        trace.append('= %d' % msecs)
         event.idle(msecs)

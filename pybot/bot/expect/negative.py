@@ -15,5 +15,9 @@ class Negative(Expect):
     def __repr__(self):
         return 'Negative(%r)' % self._expect
 
-    def _test(self, event):
-        return not self._expect.test(event)
+    def _test(self, event, trace):
+        trace2 = []
+        matched = self._expect.test(event, trace2)
+        trace.append('%r %r' % (self._expect, matched))
+        trace.append(trace2)
+        return not matched

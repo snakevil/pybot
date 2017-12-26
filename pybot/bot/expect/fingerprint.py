@@ -30,9 +30,7 @@ class Fingerprint(Expect):
                 else ', %d' % self._threshold
         )
 
-    def _test(self, event):
-        if not event.screen:
-            return False
+    def _test(self, event, trace):
         digest = event.screen.crop(
             (self._region.left, self._region.top),
             (self._region.right, self._region.bottom)
@@ -42,6 +40,7 @@ class Fingerprint(Expect):
             self._gray
         ).digest
         distance = self._measure(self._digest, digest)
+        trace.append('= %8.3f/%8.3f %r' % (distance, self._threshold, digest))
         return distance <= self._threshold
 
     def _measure(self, a, b):

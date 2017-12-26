@@ -46,11 +46,11 @@ class Base(object):
         self.spots[id] = (region, spread)
         return self
 
-    def test(self, event):
+    def test(self, event, trace = []):
         if event.screen.timestamp != self._time:
             self._time = event.screen.timestamp
-            self._result = self._test(event)
+            self._result = self._test(event, trace)
         return self._result
 
-    def _test(self, event):
+    def _test(self, event, trace):
         return False

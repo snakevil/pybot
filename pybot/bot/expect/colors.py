@@ -25,14 +25,13 @@ class Colors(Expect):
                 else ', %d' % self._threshold
         )
 
-    def _test(self, event):
-        if not event.screen:
-            return False
+    def _test(self, event, trace):
         histo = event.screen.crop(
             (self._region.left, self._region.top),
             (self._region.right, self._region.bottom)
         ).histogram(1)
         distance = self._measure(self._histogram, histo)
+        trace.append('= %8.3f/%8.3f %r' % (distance, self._threshold, histo))
         return distance <= self._threshold
 
     def _measure(self, a, b):

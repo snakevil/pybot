@@ -12,12 +12,12 @@ class Spot(React):
     def __repr__(self):
         return 'Spot(%r)' % self._id
 
-    def do(self, event):
+    def do(self, event, trace):
         spot = event['__spots__'].get(self._id)
         if spot:
             if not isinstance(spot[1], int) or 0 > spot[1]:
                 raise ESpread(spot[1])
-            event.log('!%r represented as Fire%r' % (self, spot), 0)
+            trace.append('Fire%r' % (spot,))
             if isinstance(spot[0], player.Rect):
                 if spot[1]:
                     point = spot[0].random(spot[1])
@@ -27,6 +27,8 @@ class Spot(React):
                 point = spot[0].spread(spot[1])
             else:
                 point = spot[0]
+            trace.append(['= %r' % point])
             event.click(point)
         else:
-            event.log('!%r missing' % self, 3)
+            trace.append('None')
+            event['__fatal__'] = True

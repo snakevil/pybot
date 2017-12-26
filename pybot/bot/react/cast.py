@@ -10,5 +10,5 @@ class Cast(React):
     def __repr__(self):
         return 'Cast(%r)' % self._spell
 
-    def do(self, event):
+    def do(self, event, trace):
         self._spell(event)

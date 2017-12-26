@@ -64,6 +64,8 @@ class Mission(core.Firable):
         if not isinstance(competence, Competence):
             raise core.EType(competence, Competence)
         self._logq.append(('@%s cloned %s' % (self._company, competence), 1))
+        for reflex in competence:
+            self._logq.append(('@%s injected %s' % (self._company, reflex), 0))
         self._reflexes[self._company].extend(competence)
         return self
 

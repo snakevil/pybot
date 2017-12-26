@@ -28,7 +28,7 @@ class Fire(React):
             '' if not self._spread else ', %d' % self._spread
         )
 
-    def do(self, event):
+    def do(self, event, trace):
         if isinstance(self._target, player.Rect):
             if self._spread:
                 point = self._target.random(self._spread)
@@ -38,4 +38,5 @@ class Fire(React):
             point = self._target.spread(self._spread)
         else:
             point = self._target
+        trace.append('= %r' % point)
         event.click(point)

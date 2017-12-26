@@ -12,6 +12,6 @@ class State(React):
             '%s = %r' % (k, v) for k, v in self._fields.items()
         ])
 
-    def do(self, event):
+    def do(self, event, trace):
         for k, v in self._fields.items():
             event['__state_%s__' % k] = v

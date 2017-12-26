@@ -29,9 +29,12 @@ class Thenable(Base):
     def __iadd__(self, other):
         return self.then(other)
 
-    def do(self, event):
+    def do(self, event, trace):
         for react in self._reacts:
-            react.do(event)
+            trace2 = []
+            trace.append(repr(react))
+            react.do(event, trace2)
+            trace.append(trace2)
 
     def then(self, next):
         if not isinstance(next, Base):
