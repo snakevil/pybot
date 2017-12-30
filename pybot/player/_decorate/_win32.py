@@ -107,13 +107,25 @@ def get_size(hwnd):
     return (rect.right - rect.left, rect.bottom - rect.top)
 
 def resize(hwnd, width, height, top = 0, left = 0):
+    SWP_NOSIZE = 0x0001
     SWP_NOMOVE = 0x0002
     SWP_NOZORDER = 0x0004
-    SWP_SHOWWINDOW = 0x0040
-    flag = SWP_NOZORDER + SWP_SHOWWINDOW
+    SWP_NOACTIVATE = 0x0010
+    flag = SWP_NOZORDER + SWP_NOACTIVATE
+    (ox0, oy0), (ox1, oy1) = get_rect(hwnd)
     if not top and not left:
         flag += SWP_NOMOVE
-    result = user32.SetWindowPos(hwnd, 0, left, top, width, height, flag)
+        left = ox0
+        top = oy0
+    iw, ih = get_size(hwnd)
+    width += ox1 - ox0 - iw
+    height += oy1 - oy0 - ih
+    flag = SWP_NOZORDER
+    result = user32.SetWindowPos(hwnd, 0, 0, 0, width, height, flag)
+    if not result:
+        raise EWin32('user32.SetWindowPos')
+    flag = SWP_NOSIZE + SWP_NOZORDER + SWP_NOACTIVATE
+    result = user32.SetWindowPos(hwnd, 0, left, top, 0, 0, flag)
     if not result:
         raise EWin32('user32.SetWindowPos')
 

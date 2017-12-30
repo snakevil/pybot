@@ -63,16 +63,11 @@ class Window(object):
         return self
 
     def resize(self, width, height):
+        self.restore()
         cw, ch = _decorate.get_size(self._handle)
-        if width == cw and height == ch:
-            return False
-        rect = self.window
-        _decorate.resize(
-            self._handle,
-            width + rect.width - cw,
-            height + rect.height - ch
-        )
-        return True
+        if width != cw or height != ch:
+            _decorate.resize(self._handle, width, height)
+        return self
 
     @property
     def window(self):
