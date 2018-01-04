@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+import time
 from ... import image, player
 from .expect import Expect
 from .etemplate import ETemplate
@@ -10,6 +11,7 @@ class Template(Expect):
     def __init__(self, template, region = None, threshold = 10, **spots):
         super(Template, self).__init__(**spots)
         self._spots = self.spots.copy()
+        self._template = template
         try:
             self._needle = image.template(template)
         except Exception as e:
@@ -21,10 +23,12 @@ class Template(Expect):
         self._threshold = threshold
 
     def __repr__(self):
-        return 'Template(%r%s)' % (
-            self._needle,
+        return 'Template(%r%s%s)' % (
+            self._template,
             '' if not self._region \
-                else ', %r' % self._region
+                else ', %r' % self._region,
+            '' if 10 == self._threshold \
+                else ', %d' % self._threshold
         )
 
     def _test(self, event, trace):
@@ -37,12 +41,13 @@ class Template(Expect):
                 (x0, y0),
                 (self._region.right, self._region.bottom)
             )
+        t0 = time.time()
         x, y = self._search(zone.grayscale().binary(self._needle.threshold))
         if 0 > x:
             return False
         x += x0
         y += y0
-        trace.append('= %r' % ((x, y),))
+        trace.append('= %r in %.3fms' % ((x, y), 1000 * (time.time() - t0)))
         self.spots = {
             k: (v[0].skew(x, y), v[1]) for k, v in self._spots.items()
         }
