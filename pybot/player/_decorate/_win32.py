@@ -136,54 +136,45 @@ def _click_gtor():
         result = kernel32.CloseHandle(hproc)
         if not result:
             raise EWin32('kernel32.CloseHandle')
+    def _pack(x, y):
+        return ((y & 0xFFFF) << 16) | (x & 0xFFFF)
+    def _post(hwnd, *messages):
+        pid = get_pid(hwnd)
+        for msg, wparam, lparam in messages:
+            result = user32.PostMessageW(hwnd, msg, wparam, lparam)
+            if not result:
+                raise EWin32(user32.PostMessageW)
+            time.sleep(.01)
+            _wait_idle(pid)
     WM_MOUSEMOVE = 0x200
     WM_LBUTTONDOWN = 0x201
     WM_LBUTTONUP = 0x202
+    MK_LBUTTON = 0x0001
     def click(hwnd, x, y):
-        pid = get_pid(hwnd)
-        pos = ((y & 0xFFFF) << 16) | (x & 0xFFFF)
-        result = user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos)
-        if not result:
-            raise EWin32('user32.PostMessageW')
-        time.sleep(.01)
-        _wait_idle(pid)
-        result = user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos)
-        if not result:
-            raise EWin32('user32.PostMessageW')
-        time.sleep(.01)
-        _wait_idle(pid)
+        pos = _pack(x, y)
+        _post(
+            hwnd,
+            (WM_LBUTTONDOWN, MK_LBUTTON, pos),
+            (WM_LBUTTONUP, MK_LBUTTON, pos)
+        )
     def drag(hwnd, start, end):
-        pid = get_pid(hwnd)
-        pos1 = (
-            (start[1] & 0xFFFF) << 16
-        ) | (
-            start[0] & 0xFFFF
-        )
-        pos2 = (
-            (start[1] + end[1] >> 1 & 0xFFFF) << 16
-        ) | (
-            start[0] + end[0] >> 1 & 0xFFFF
-        )
-        pos3 = (
-            (end[1] & 0xFFFF) << 16
-        ) | (
-            end[0] & 0xFFFF
-        )
-        result = user32.PostMessageW(hwnd, WM_LBUTTONDOWN, 0, pos1)
-        if not result:
-            raise EWin32('user32.PostMessageW')
-        time.sleep(.01)
-        _wait_idle(pid)
-        result = user32.PostMessageW(hwnd, WM_MOUSEMOVE, 0, pos2)
-        if not result:
-            raise EWin32('user32.PostMessageW')
-        time.sleep(.01)
-        _wait_idle(pid)
-        result = user32.PostMessageW(hwnd, WM_LBUTTONUP, 0, pos3)
-        if not result:
-            raise EWin32('user32.PostMessageW')
-        time.sleep(.01)
-        _wait_idle(pid)
+        steps = ((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2) ** .5
+        steps = 1 + int(steps / 5)
+        xunit = (end[0] - start[0]) / steps
+        yunit = (end[1] - start[1]) / steps
+        msgs = [
+            (
+                WM_MOUSEMOVE,
+                MK_LBUTTON,
+                _pack(
+                    int(round(start[0] + xunit * i)),
+                    int(round(start[1] + yunit * i))
+                )
+            ) for i in range(1, steps - 1)
+        ]
+        msgs.insert(0, (WM_LBUTTONDOWN, MK_LBUTTON, _pack(*start)))
+        msgs.append((WM_LBUTTONUP, MK_LBUTTON, _pack(*end)))
+        _post(hwnd, *msgs)
     return (click, drag)
 click, drag = _click_gtor()
 
