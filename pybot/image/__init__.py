@@ -5,4 +5,5 @@ from .image import Image
 from .screenshot import Screenshot
 
 load = Image.load
-template = Image.template
+template = Image.binary
+greyscale = Image.greyscale

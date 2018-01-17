@@ -38,10 +38,10 @@ def get_size(hwnd):
 def resize(hwnd, width, height, top = 0, left = 0):
     raise core.ETodo('player._decorate._macos.resize')
 
-def click(hwnd, x, y):
+def click(hwnd, x, y, force = False):
     raise core.ETodo('player._decorate._macos.click')
 
-def drag(hwnd, start, end):
+def drag(hwnd, start, end, force = False):
     raise core.ETodo('player._decorate._macos.drag')
 
 def grab(hwnd):

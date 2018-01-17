@@ -5,6 +5,8 @@ import ctypes as c
 import ctypes.wintypes as w
 import re
 import time
+import random
+import math
 from .eminimized import EMinimized
 from .ewin32 import EWin32
 
@@ -130,6 +132,11 @@ def resize(hwnd, width, height, top = 0, left = 0):
         raise EWin32('user32.SetWindowPos')
 
 def _click_gtor():
+    class POINT(c.Structure):
+        _fields_ = [
+            ('x', w.LONG),
+            ('y', w.LONG)
+        ]
     PROCESS_QUERY_INFORMATION = 0x400
     def _wait_idle(pid):
         hproc = kernel32.OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid)
@@ -138,43 +145,66 @@ def _click_gtor():
             raise EWin32('kernel32.CloseHandle')
     def _pack(x, y):
         return ((y & 0xFFFF) << 16) | (x & 0xFFFF)
-    def _post(hwnd, *messages):
-        pid = get_pid(hwnd)
-        for msg, wparam, lparam in messages:
-            result = user32.PostMessageW(hwnd, msg, wparam, lparam)
+    def _post(hwnd, force, *messages):
+        if force:
+            pos = POINT()
+            result = user32.GetCursorPos(c.byref(pos))
             if not result:
-                raise EWin32(user32.PostMessageW)
+                raise EWin32('user32.GetCursorPos')
+        pid = get_pid(hwnd)
+        for x, y, wparam, msg in messages:
+            print(x, y, msg, wparam)
+            result = user32.PostMessageW(hwnd, msg, wparam, _pack(x, y))
+            if not result:
+                raise EWin32('user32.PostMessageW')
             time.sleep(.01)
             _wait_idle(pid)
+        print('---')
+    def _bezier(src, dest, progress):
+        return (dest - src) * progress + src
+    def _bezier2(src, mid, dest, progress):
+        return _bezier(
+            _bezier(src, mid, progress),
+            _bezier(mid, dest, progress),
+            progress
+        )
     WM_MOUSEMOVE = 0x200
     WM_LBUTTONDOWN = 0x201
     WM_LBUTTONUP = 0x202
     MK_LBUTTON = 0x0001
-    def click(hwnd, x, y):
-        pos = _pack(x, y)
+    def click(hwnd, x, y, force = False):
         _post(
             hwnd,
-            (WM_LBUTTONDOWN, MK_LBUTTON, pos),
-            (WM_LBUTTONUP, MK_LBUTTON, pos)
+            force,
+            (x, y, MK_LBUTTON, WM_LBUTTONDOWN),
+            (x, y, MK_LBUTTON, WM_LBUTTONUP)
         )
-    def drag(hwnd, start, end):
-        steps = ((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2) ** .5
-        steps = 1 + int(steps / 5)
-        xunit = (end[0] - start[0]) / steps
-        yunit = (end[1] - start[1]) / steps
-        msgs = [
-            (
-                WM_MOUSEMOVE,
-                MK_LBUTTON,
-                _pack(
-                    int(round(start[0] + xunit * i)),
-                    int(round(start[1] + yunit * i))
-                )
-            ) for i in range(1, steps - 1)
-        ]
-        msgs.insert(0, (WM_LBUTTONDOWN, MK_LBUTTON, _pack(*start)))
-        msgs.append((WM_LBUTTONUP, MK_LBUTTON, _pack(*end)))
-        _post(hwnd, *msgs)
+    def drag(hwnd, start, end, force = False):
+        distance = ((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2) ** .5
+        steps = 1 + int(distance / 10)
+        if 1 < steps:
+            degree = random.uniform(0, math.pi)
+            radius = min(16, random.uniform(0, distance / 4))
+            midx = int(
+                round((start[0] + end[0]) / 2 + radius * math.cos(degree))
+            )
+            midy = int(
+                round((start[1] + end[1]) / 2 + radius * math.sin(degree))
+            )
+            factor = 1 / steps
+            msgs = [
+                (
+                    int(round(_bezier2(start[0], midx, end[0], factor * i))),
+                    int(round(_bezier2(start[1], midy, end[1], factor * i))),
+                    MK_LBUTTON,
+                    WM_MOUSEMOVE
+                ) for i in range(1, steps)
+            ]
+        else:
+            msgs = []
+        msgs.insert(0, (*start, MK_LBUTTON, WM_LBUTTONDOWN))
+        msgs.append((*end, MK_LBUTTON, WM_LBUTTONUP))
+        _post(hwnd, force, *msgs)
     return (click, drag)
 click, drag = _click_gtor()
 

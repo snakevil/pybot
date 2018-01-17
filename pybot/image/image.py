@@ -28,8 +28,26 @@ class Image(Base):
         return image
 
     @staticmethod
-    def template(blob):
+    def binary(blob):
         return Binary.parse(blob)
 
+    @staticmethod
+    def greyscale(blob):
+        return Greyscale.parse(blob)
+
     def grayscale(self, depth = 8):
-        return Greyscale(self, self.rgba, depth)
+        ''' http://blog.csdn.net/u013467442/article/details/47616661
+        '''
+        if not isinstance(depth, int) or depth not in [1, 2, 4, 8]:
+            raise EDepth(depth)
+        raw = bytearray(self.raw)
+        length = len(self.raw)
+        bits = 8 - depth
+        for cursor in range(0, length, 4):
+            raw[cursor] = (
+                raw[cursor] + (raw[cursor + 1] << 1) + raw[cursor + 2]
+            ) << bits >> 2 + bits
+        raw[1::4] = raw[0::4]
+        raw[2::4] = raw[0::4]
+        raw[3::4] = [255] * (length >> 2)
+        return Greyscale(self, raw, depth)

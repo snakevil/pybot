@@ -17,16 +17,16 @@ class Base(object):
         else:
             self.width = size.width
             self.height = size.height
-        self.rgba = raw
+        self.raw = raw
         self.timestamp = time.time()
 
     def pixel(self, x, y):
         if 1 > x or x >= self.width or 1 > y or y >= self.height:
             raise ECoordinate(x, y)
-        pos = (self.width * y + x) * 4
+        offset = self.width * y + x << 2
         return Pixel(
             (x, y),
-            tuple(self.rgba[pos:pos + 4])
+            (self.raw[offset:offset + 4],)
         )
 
     def save(self, filepath):
@@ -43,7 +43,7 @@ class Base(object):
 
     def _png(self):
         png = PNG(self.width, self.height, type = PNG.TRUECOLOR_ALPHA)
-        return png.encode(self.rgba)
+        return png.encode(self.raw)
 
     def crop(self, top_left, bottom_right):
         top = min(top_left[1], bottom_right[1])
@@ -56,11 +56,11 @@ class Base(object):
             raise ECoordinate(right, bottom)
         width = max(1, right - left)
         height = max(1, bottom - top)
-        line = 4 * width
-        raw = bytearray(line * height)
+        size = width << 2
+        raw = bytearray(size * height)
         for y in range(height):
-            offset = 4 * (self.width * (top + y) + left)
-            raw[line * y:line * (y + 1)] = self.rgba[offset:offset + line]
+            offset = self.width * (top + y) + left << 2
+            raw[size * y:size * (y + 1)] = self.raw[offset:offset + size]
         return type(self)((width, height), raw)
 
     def resize(self, width, height):
@@ -68,19 +68,19 @@ class Base(object):
         '''
         width = max(1, width)
         height = max(1, height)
-        line = 4 * width
-        raw = bytearray(line * height)
-        ratio_x = (self.width << 16) / width
-        ratio_y = (self.height << 16) / height
-        line0 = 4 * self.width
+        size = width << 2
+        raw = bytearray(size * height)
+        ratio_x = (self.width << 16) / width + 1
+        ratio_y = (self.height << 16) / height + 1
+        size0 = self.width << 2
         for y in range(height):
             y0 = int(y * ratio_y) >> 16
-            offset = y * line
-            offset0 = y0 * line0
+            offset = y * size
+            offset0 = y0 * size0
             for x in range(width):
                 x0 = int(x * ratio_x) >> 16
-                raw[offset + 4 * x:offset + 4 * x + 4] = \
-                    self.rgba[offset0 + 4 * x0:offset0 + 4 * x0 + 4]
+                raw[offset + (x << 2):offset + (x << 2) + 4] = \
+                    self.raw[offset0 + (x0 << 2):offset0 + (x0 << 2) + 4]
         return type(self)((width, height), raw)
 
     def histogram(self, depth = 2):
@@ -95,14 +95,14 @@ class Base(object):
                 [0 for i in values] for j in values
             ] for k in values
         ]
-        for i in range(0, len(self.rgba), 4):
-            a = self.rgba[i + 3]
+        for i in range(0, len(self.raw), 4):
+            a = self.raw[i + 3]
             if not a:
                 space[0][0][0] += 1
                 continue
-            r = self.rgba[i]
-            g = self.rgba[i + 1]
-            b = self.rgba[i + 2]
+            r = self.raw[i]
+            g = self.raw[i + 1]
+            b = self.raw[i + 2]
             if 255 == a:
                 r >>= depth
                 g >>= depth

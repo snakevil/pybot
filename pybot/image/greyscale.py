@@ -1,5 +1,8 @@
 # encoding: utf-8
 
+import struct
+import base64
+
 from .base import Base
 from .binary import Binary
 from ._codec import PNG
@@ -7,19 +10,7 @@ from ._codec.edepth import EDepth
 
 class Greyscale(Base):
     def __init__(self, size, raw, depth = 8):
-        ''' http://blog.csdn.net/u013467442/article/details/47616661
-        '''
-        if not isinstance(depth, int) or depth not in [1, 2, 4, 8]:
-            raise EDepth(depth)
-        rgba = bytearray(raw)
-        bits = 8 - depth
-        for cursor in range(0, len(rgba), 4):
-            rgba[cursor] = (
-                raw[cursor] + (raw[cursor + 1] << 1) + raw[cursor + 2]
-            ) >> 2 + bits << bits
-        rgba[1::4] = rgba[0::4]
-        rgba[2::4] = rgba[0::4]
-        super(Greyscale, self).__init__(size, rgba)
+        super(Greyscale, self).__init__(size, raw)
         self.depth = depth
         self._threshold = 0
 
@@ -35,3 +26,26 @@ class Greyscale(Base):
 
     def binary(self, threshold = 0):
         return Binary(self, self.rgba, threshold or self.threshold)
+
+    def dump(self):
+        width = 64
+        blob = b''.join([
+            struct.pack('>2H', self.width, self.height),
+            self.rgba[0::4]
+        ])
+        clob = base64.b64encode(blob).decode('utf-8')
+        return '\n'.join(
+            clob[i:i + width] for i in range(0, len(clob), width)
+        )
+
+    @classmethod
+    def parse(cls, template):
+        clob = template.strip().replace('\n', '')
+        blob = base64.b64decode(clob.encode('utf-8'))
+        width, height = struct.unpack('>2H', blob[0:4])
+        length = width * height * 4
+        raw = bytearray(length)
+        raw[0::4] = blob[4:]
+        raw[1::4] = blob[4:]
+        raw[2::4] = blob[4:]
+        return cls((width, height), raw)
