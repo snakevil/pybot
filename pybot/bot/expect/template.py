@@ -80,10 +80,10 @@ class Template(Expect):
         for y in range(self._needle.height -1, -1, -1):
             limit += quota * y * 2 / (self._needle.height - 1)
             filtered = []
-            nline = self._needle.rgba[width * y:width * (y + 1):4]
+            nline = self._needle.raw[width * y:width * (y + 1):4]
             for candidate, bad in candidates:
                 offset = (candidate + haystack.width * y) << 2
-                hline = haystack.rgba[offset:offset + width:4]
+                hline = haystack.raw[offset:offset + width:4]
                 if hline != nline:
                     bad += sum([1 for i, j in zip(hline, nline) if i != j])
                     if bad > limit:

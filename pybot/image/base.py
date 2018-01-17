@@ -2,7 +2,8 @@
 
 import time
 import struct
-import zlib
+import base64
+
 from .. import core
 from ._struct import Pixel
 from ._codec import PNG
@@ -20,13 +21,24 @@ class Base(object):
         self.raw = raw
         self.timestamp = time.time()
 
+    def __str__(self):
+        width = 64
+        blob = b''.join([
+            struct.pack('>2H', self.width, self.height),
+            self.raw
+        ])
+        clob = base64.b64encode(blob).decode('utf-8')
+        return '\n'.join(
+            clob[i:i + width] for i in range(0, len(clob), width)
+        )
+
     def pixel(self, x, y):
         if 1 > x or x >= self.width or 1 > y or y >= self.height:
             raise ECoordinate(x, y)
         offset = self.width * y + x << 2
         return Pixel(
             (x, y),
-            (self.raw[offset:offset + 4],)
+            tuple(self.raw[offset:offset + 4])
         )
 
     def save(self, filepath):
@@ -113,4 +125,4 @@ class Base(object):
                 g >>= depth + 8
                 b >>= depth + 8
             space[r][g][b] += 1
-        return tuple(b for r in space for g in r for b in g)
+        return (b for r in space for g in r for b in g)

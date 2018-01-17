@@ -8,20 +8,53 @@ from ._codec import PNG
 
 class Binary(Base):
     def __init__(self, size, raw, threshold = 0):
-        self.threshold = threshold or self.otsu(raw)
-        rgba = bytearray(raw)
-        length = len(rgba)
-        for cursor in range(0, length, 4):
-            rgba[cursor] = 0 if raw[cursor] < self.threshold else 255
-        rgba[1::4] = rgba[0::4]
-        rgba[2::4] = rgba[0::4]
-        rgba[3::4] = [255] * (length >> 2)
-        super(Binary, self).__init__(size, rgba)
+        super(Binary, self).__init__(size, raw)
+        self.threshold = threshold
+        self._projectX = None
+        self._projectY = None
         self._digest = ''
+
+    def __str__(self):
+        width = 64
+        blob = b''.join([
+            struct.pack('>2HB', self.width, self.height, self.threshold),
+            bytes.fromhex(self.digest)
+        ])
+        clob = base64.b64encode(blob).decode('utf-8')
+        return '\n'.join(
+            clob[i:i + width] for i in range(0, len(clob), width)
+        )
 
     def _png(self):
         png = PNG(self.width, self.height, type = PNG.GREYSCALE_ALPHA)
-        return png.encode(self.rgba)
+        return png.encode(self.raw)
+
+    def crop(self, top_left, bottom_right):
+        cropped = super().crop(top_left, bottom_right)
+        cropped.threshold = self.threshold
+        return cropped
+
+    def resize(self, width, height):
+        resized = super().resize(width, height)
+        resized.threshold = self.threshold
+        return resized
+
+    @classmethod
+    def parse(cls, template):
+        clob = template.strip().replace('\n', '')
+        blob = base64.b64decode(clob.encode('utf-8'))
+        width, height, threshold = struct.unpack('>2HB', blob[0:5])
+        length = width * height * 4
+        raw = bytearray(length)
+        bize = range(8)
+        for i in range(5, len(blob)):
+            j = (i - 5) << 5
+            bits = bin(blob[i])[2:].zfill(8)
+            for k in bize:
+                l = k << 2
+                if j + l < length:
+                    raw[j + l] = 255 if int(bits[k]) else 0
+        return cls((width, height), raw, threshold)
 
     @staticmethod
     def otsu(raw):
@@ -63,7 +96,7 @@ class Binary(Base):
             length = self.width * self.height
             size = length + 7 >> 3
             bits = bytearray(size << 3)
-            bits[0:length] = self.rgba[0::4]
+            bits[0:length] = self.raw[0::4]
             alob = bytearray(size)
             for cursor in range(size):
                 index = cursor << 3
@@ -77,31 +110,3 @@ class Binary(Base):
                     + (bits[index + 7] & 1)
             self._digest = bytes(alob).hex()
         return self._digest
-
-    def dump(self):
-        width = 64
-        blob = b''.join([
-            struct.pack('>2HB', self.width, self.height, self.threshold),
-            bytes.fromhex(self.digest)
-        ])
-        clob = base64.b64encode(blob).decode('utf-8')
-        return '\n'.join(
-            clob[i:i + width] for i in range(0, len(clob), width)
-        )
-
-    @classmethod
-    def parse(cls, template):
-        clob = template.strip().replace('\n', '')
-        blob = base64.b64decode(clob.encode('utf-8'))
-        width, height, threshold = struct.unpack('>2HB', blob[0:5])
-        length = width * height * 4
-        raw = bytearray(length)
-        bize = range(8)
-        for i in range(5, len(blob)):
-            j = (i - 5) << 5
-            bits = bin(blob[i])[2:].zfill(8)
-            for k in bize:
-                l = k << 2
-                if j + l < length:
-                    raw[j + l] = 255 if int(bits[k]) else 0
-        return cls((width, height), raw, threshold)
