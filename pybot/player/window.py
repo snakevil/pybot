@@ -84,6 +84,10 @@ class Window(object):
     def click(self, point):
         _decorate.click(self._handle, point.x, point.y)
         return self.idle(90)
+    
+    def rclick(self, point):
+        _decorate.rclick(self._handle, point.x, point.y)
+        return self.idle(90)
 
     def drag(self, start, end):
         _decorate.drag(self._handle, (start.x, start.y), (end.x, end.y))

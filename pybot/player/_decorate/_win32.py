@@ -153,13 +153,11 @@ def _click_gtor():
                 raise EWin32('user32.GetCursorPos')
         pid = get_pid(hwnd)
         for x, y, wparam, msg in messages:
-            print(x, y, msg, wparam)
             result = user32.PostMessageW(hwnd, msg, wparam, _pack(x, y))
             if not result:
                 raise EWin32('user32.PostMessageW')
             time.sleep(.01)
             _wait_idle(pid)
-        print('---')
     def _bezier(src, dest, progress):
         return (dest - src) * progress + src
     def _bezier2(src, mid, dest, progress):
@@ -171,13 +169,23 @@ def _click_gtor():
     WM_MOUSEMOVE = 0x200
     WM_LBUTTONDOWN = 0x201
     WM_LBUTTONUP = 0x202
+    WM_RBUTTONDOWN = 0x0204
+    WM_RBUTTONUP = 0x0205
     MK_LBUTTON = 0x0001
+    MK_RBUTTON = 0x0002
     def click(hwnd, x, y, force = False):
         _post(
             hwnd,
             force,
             (x, y, MK_LBUTTON, WM_LBUTTONDOWN),
             (x, y, MK_LBUTTON, WM_LBUTTONUP)
+        )
+    def rclick(hwnd, x, y, force = False):
+        _post(
+            hwnd,
+            force,
+            (x, y, MK_RBUTTON, WM_RBUTTONDOWN),
+            (x, y, MK_RBUTTON, WM_RBUTTONUP)
         )
     def drag(hwnd, start, end, force = False):
         distance = ((end[0] - start[0]) ** 2 + (end[1] - start[1]) ** 2) ** .5
@@ -205,8 +213,8 @@ def _click_gtor():
         msgs.insert(0, (*start, MK_LBUTTON, WM_LBUTTONDOWN))
         msgs.append((*end, MK_LBUTTON, WM_LBUTTONUP))
         _post(hwnd, force, *msgs)
-    return (click, drag)
-click, drag = _click_gtor()
+    return (click, rclick, drag)
+click, rclick, drag = _click_gtor()
 
 def _grab_gtor():
     SRCCOPY = 0xCC0020
@@ -298,6 +306,6 @@ __all__ = [
     'query',
     'get_pid', 'is_minimized', 'minimize', 'restore', 'foreground',
     'get_rect', 'get_size', 'resize',
-    'click', 'drag', 'grab',
+    'click', 'rclick', 'drag', 'grab',
     'destroy'
 ]
